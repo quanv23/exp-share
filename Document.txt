@@ -1,5 +1,0 @@
-# Steps to creation
-
-1. Read the Next.js tutorial and set up the routing for the page 
-
-2. 
