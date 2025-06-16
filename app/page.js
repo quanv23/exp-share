@@ -1,7 +1,10 @@
 import Link from 'next/link';
-import styles from './page.module.css';
+import { getAllExpenses } from '@/lib/expenses';
 
-export default function Home() {
+export default async function Home() {
+	const expense = await getAllExpenses();
+	console.log(expense);
+
 	return (
 		<div>
 			<Link href={'/Dashboard'}>Dashboard</Link>
