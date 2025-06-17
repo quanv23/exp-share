@@ -21,7 +21,7 @@ export default function EditExpenseForm(props) {
 		description: description,
 		amount: amount,
 		category: category.id,
-		date: createdAt,
+		createdAt: createdAt,
 	});
 
 	// Handles input field changes and updates the state
@@ -62,7 +62,7 @@ export default function EditExpenseForm(props) {
 			/>
 			<input
 				type='date'
-				name='date'
+				name='createdAt'
 				value={editFormData.date}
 				placeholder='Date'
 				onChange={handleChange}
