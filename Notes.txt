@@ -1,0 +1,21 @@
+=================================================
+Previously: 
+=================================================
+
+
+
+=================================================
+Steps to Creation:
+=================================================
+
+1. Read the Next.js tutorial and set up the routing for the page 
+
+2. Set up the tremor library with TypeScript and Tailwind so that the components are usable
+
+3. Set up connection with mongoose and mongodb
+
+
+
+=================================================
+Challenges: 
+=================================================
