@@ -9,7 +9,7 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
 	title: 'Exp Share',
-	description: 'Track Expernses',
+	description: 'Track Expenses',
 };
 
 export default function RootLayout({
@@ -19,7 +19,9 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang='en'>
-			<body className={`${nunito.variable} antialiased`}>{children}</body>
+			<body className={`${nunito.variable} antialiased bg-[#f5f5f5]`}>
+				{children}
+			</body>
 		</html>
 	);
 }

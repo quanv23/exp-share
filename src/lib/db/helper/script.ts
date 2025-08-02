@@ -1,3 +1,8 @@
+/**
+ * @hidden
+ * @module
+ */
+
 import { Expense } from '../models/Expense';
 import connectDB from './mongoose';
 import mongoose from 'mongoose';

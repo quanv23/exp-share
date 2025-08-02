@@ -1,3 +1,8 @@
+/**
+ * @hidden
+ * @module
+ */
+
 'use client';
 
 import React from 'react';
