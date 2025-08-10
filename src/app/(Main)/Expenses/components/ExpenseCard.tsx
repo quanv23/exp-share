@@ -1,13 +1,37 @@
 /**
- * React component that contains information about expenses or categories to show to the user
+ * React component that contains information about expenses to show to the user
  * @module
  */
 'use client';
 
 import Modal from '@/app/components/Modal';
+import { StringCategory } from '@/lib/db/categories';
+import { UserInputExpense } from '@/lib/db/expenses';
 import { useState } from 'react';
+import EditExpenseForm from './EditExpenseForm';
+import DeleteExpenseForm from './DeleteExpenseForm';
 
-export default function ExpenseCard() {
+/**
+ * Represents the props of the card
+ */
+export interface Props {
+	/**
+	 * List of all categories from the db to be passed down to the edit form
+	 */
+	categories: StringCategory[];
+	/**
+	 * Function that edits an expense from the db to be passed down to the edit form
+	 */
+	editExpenseFunction: (newExpense: UserInputExpense) => Promise<void>;
+	/**
+	 * Function that deletes an expense from the db to be passed down to delete form
+	 */
+	deleteExpenseFunction: (id: string) => Promise<void>;
+}
+
+export default function ExpenseCard(props: Props) {
+	const { categories, editExpenseFunction, deleteExpenseFunction } = props;
+
 	// State that determines whether to display the modals or not
 	const [toggleModal, setToggleModal] = useState(false);
 
@@ -22,7 +46,13 @@ export default function ExpenseCard() {
 		<>
 			{toggleModal && (
 				<Modal isOpen={toggleModal} onClose={handleModalClick}>
-					<div>Hello</div>
+					<div className='flex flex-col gap-4'>
+						<EditExpenseForm
+							categories={categories}
+							editExpenseFunction={editExpenseFunction}
+						/>
+						<DeleteExpenseForm deleteExpenseFunction={deleteExpenseFunction} />
+					</div>
 				</Modal>
 			)}
 			<div

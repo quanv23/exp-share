@@ -13,6 +13,10 @@ export interface Props {
 	 */
 	value: string;
 	/**
+	 * Width of <select> as a string in tailwind format (Ex. w-4)
+	 */
+	width: String;
+	/**
 	 * Function that runs when changes to the input field occur
 	 */
 	onChangeFunction: (event: EventChange) => void;
@@ -30,7 +34,7 @@ type EventChange =
  * @param props Properties of the component
  */
 export default function SelectCategory(props: Props) {
-	const { categories, value, onChangeFunction } = props;
+	const { categories, value, width, onChangeFunction } = props;
 
 	// Maps category name and ID to dropdown options
 	// Such that the names are displayed, but when selected the IDs are saved
@@ -45,7 +49,7 @@ export default function SelectCategory(props: Props) {
 			name='category'
 			value={value}
 			onChange={onChangeFunction}
-			className='input-field w-3/6'
+			className={`input-field ${width}`}
 		>
 			<option value=''>Category</option>
 			{categoryElements}

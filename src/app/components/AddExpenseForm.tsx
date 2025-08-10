@@ -73,7 +73,7 @@ export default function AddExpenseForm(props: Props) {
 			});
 		} catch (error) {
 			console.error('Error message: ', error);
-			throw new Error('Error submitting add expense form');
+			throw new Error('Error adding new expense');
 		}
 	}
 
@@ -103,11 +103,12 @@ export default function AddExpenseForm(props: Props) {
 				<SelectCategory
 					categories={categories}
 					value={expense.category}
+					width={'w-3/6'}
 					onChangeFunction={handleInputChange}
 				/>
 			</div>
 			<button type='submit' className='big-btn bg-myGreen'>
-				Add +
+				Add
 			</button>
 		</form>
 	);

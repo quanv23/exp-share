@@ -32,7 +32,7 @@ export interface UserInputExpense {
 	description: string;
 	amount: string;
 	category: string;
-	createdAt?: string;
+	date?: string;
 }
 
 /**
@@ -139,7 +139,7 @@ export async function editExpense(newExpense: UserInputExpense): Promise<void> {
 		oldExpense.description = newExpense.description;
 		oldExpense.amount = mongoose.Types.Decimal128.fromString(newExpense.amount);
 		oldExpense.category = new mongoose.Types.ObjectId(newExpense.category);
-		oldExpense.createdAt = cleanDate(newExpense.createdAt!);
+		oldExpense.createdAt = cleanDate(newExpense.date!);
 		await oldExpense.save();
 	} catch (error) {
 		console.error('Error message: ', error);

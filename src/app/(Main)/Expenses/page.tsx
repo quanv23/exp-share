@@ -5,8 +5,13 @@
  */
 
 import ExpenseCard from './components/ExpenseCard';
+import { getAllCategories, StringCategory } from '@/lib/db/categories';
+import { editExpense, deleteExpense } from '@/lib/db/expenses';
 
-export default function page() {
+export default async function page() {
+	// Gets all categories to pass to the edit form for category combo box
+	const categories: StringCategory[] = await getAllCategories();
+
 	return (
 		<div className='flex flex-col justify-center p-5 gap-4'>
 			<div className='centered-flex block w-full h-36 bg-myGreen'>
@@ -17,7 +22,11 @@ export default function page() {
 				<button className='small-btn bg-white'>Add</button>
 			</div>
 			<div>
-				<ExpenseCard />
+				<ExpenseCard
+					categories={categories}
+					editExpenseFunction={editExpense}
+					deleteExpenseFunction={deleteExpense}
+				/>
 			</div>
 		</div>
 	);
