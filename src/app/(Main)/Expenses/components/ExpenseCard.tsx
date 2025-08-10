@@ -76,7 +76,9 @@ export default function ExpenseCard(props: Props) {
 					<p>{expense.description}</p>
 					<p className='text-xs text-myDarkGray'>{expense.date}</p>
 				</div>
-				<div className={`${amountStyles}`}>${expense.amount}</div>
+				<div className={`${amountStyles}`}>
+					${expense.amount.replace('-', '')}
+				</div>
 			</div>
 		</>
 	);

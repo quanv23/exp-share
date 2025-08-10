@@ -84,16 +84,36 @@ function cleanDate(dateString: string): Date {
 }
 
 /**
- * Checks if the expense amount is in proper format and returns a legal equivalent
+ * Formats the inputted amount to #.##.
+ * For consistency in displaying the values so they're stored in that format
  * @param amount The expense amount to be verified
- * @returns A string 0 if illegal, otherwise the original value
+ * @returns A string in #.## form
  */
-function verifyAmount(amount: string): string {
+function formatInputtedAmount(amount: string): string {
+	// Checks if the amount is not a number
 	if (amount === '' || amount === '-' || amount === '--') {
-		return '0';
-	} else {
-		return amount;
+		return '0.00';
 	}
+
+	// Check for leading negative
+	const isNegative: Boolean = amount.startsWith('-');
+	if (isNegative) {
+		amount = amount.slice(1); // Removes the negative sign
+	}
+
+	let [left, right = ''] = amount.split('.');
+
+	// Remove leading zeros on the left, but keep 0 if empty
+	left = left.replace(/0+(?=\d+)/, '') || '0';
+
+	// Truncate or pad right side to exactly two digits
+	if (right.length > 2) {
+		right = right.slice(0, 2);
+	} else {
+		right = right.padEnd(2, '0');
+	}
+
+	return `${isNegative ? '-' : ''}${left}.${right}`;
 }
 
 /**
@@ -123,7 +143,7 @@ export async function addExpense(expense: UserInputExpense): Promise<void> {
 	try {
 		// Connects to db, and creates new expense
 		await connectDB();
-		expense.amount = verifyAmount(expense.amount);
+		expense.amount = formatInputtedAmount(expense.amount);
 		await Expense.create(expense);
 	} catch (error) {
 		console.error('Error message: ', error);
@@ -133,7 +153,7 @@ export async function addExpense(expense: UserInputExpense): Promise<void> {
 
 /**
  * Edits an expense by ID
- * @param newExpense A expense with matching ID and field values to be updated to
+ * @param newExpense The new expense to replace the old expense with a matching ID
  */
 export async function editExpense(newExpense: UserInputExpense): Promise<void> {
 	'use server';
@@ -141,7 +161,7 @@ export async function editExpense(newExpense: UserInputExpense): Promise<void> {
 	try {
 		// Get the old expense to be updated
 		await connectDB();
-		newExpense.amount = verifyAmount(newExpense.amount);
+		newExpense.amount = formatInputtedAmount(newExpense.amount);
 		const oldExpense = await Expense.findById(newExpense.id!); // forgo typing to allow mongoose to return it's actual document type for .save()
 
 		//  Check that the expense exists
