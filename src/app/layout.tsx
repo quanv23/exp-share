@@ -1,9 +1,12 @@
+/**
+ * The main layout of the application which houses the metadata, fonts and the html, and body tag
+ */
+
 import type { Metadata } from 'next';
 import { Nunito } from 'next/font/google';
 import './globals.css';
 
 const nunito = Nunito({
-	variable: '--font-nunito',
 	subsets: ['latin'],
 });
 
@@ -19,7 +22,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang='en'>
-			<body className={`${nunito.variable} antialiased bg-[#f5f5f5]`}>
+			<body className={`${nunito.className} antialiased bg-[#f5f5f5]`}>
 				{children}
 			</body>
 		</html>

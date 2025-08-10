@@ -4,7 +4,6 @@
  */
 
 import mongoose from 'mongoose';
-import { DatabaseCategory } from './Category';
 
 /**
  * Represents a database representation of an expense

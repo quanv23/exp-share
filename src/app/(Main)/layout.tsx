@@ -6,7 +6,7 @@ export default function RootLayout({
 	return (
 		<>
 			<div>{children}</div>
-			<div className='fixed bottom-0 left-0 w-full h-[60px] flex justify-center items-center bg-white'>
+			<div className='centered-flex fixed bottom-0 left-0 w-full h-16 bg-white gap-4'>
 				<Link href={'/'}>Add</Link>
 				<Link href={'/Dashboard'}>Dashboard</Link>
 				<Link href={'/Categories'}>Categories</Link>
