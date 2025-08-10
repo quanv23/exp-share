@@ -11,13 +11,17 @@ import { useState } from 'react';
  */
 export interface Props {
 	/**
+	 * ID of the expense to be deleted
+	 */
+	id: string;
+	/**
 	 * Function that runs when deletion is confirmed and deletes the specified expense from the db
 	 */
 	deleteExpenseFunction: (id: string) => Promise<void>;
 }
 
 export default function DeleteExpenseForm(props: Props) {
-	const { deleteExpenseFunction } = props;
+	const { id, deleteExpenseFunction } = props;
 
 	// State that manages whether the delete button has been clicked and should show the confirmation buttons
 	const [toggleConfirmation, setToggleConfirmation] = useState<boolean>(false);
@@ -32,7 +36,14 @@ export default function DeleteExpenseForm(props: Props) {
 	/**
 	 * Handles when the delete is confirmed and deletes the expense from the db
 	 */
-	function handleDeleteConfirmed(): void {}
+	async function handleDeleteConfirmed(): Promise<void> {
+		try {
+			await deleteExpenseFunction(id);
+		} catch (error) {
+			console.error('Error message: ', error);
+			throw new Error('Error deleting expense');
+		}
+	}
 
 	return (
 		<form className='center-flex rounded-xl shadow-md w-64 bg-white p-6 space-y-6'>
@@ -41,7 +52,7 @@ export default function DeleteExpenseForm(props: Props) {
 					<button onClick={handleDeleteClick} className='w-full'>
 						Cancel
 					</button>
-					<button onClick={handleDeleteClick} className='big-btn bg-myRed'>
+					<button onClick={handleDeleteConfirmed} className='big-btn bg-myRed'>
 						Confirm
 					</button>
 				</div>

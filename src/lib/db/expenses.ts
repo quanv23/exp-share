@@ -47,7 +47,7 @@ export interface StringExpense {
 		name: string;
 		colour: string;
 	};
-	createdAt: string;
+	date: string;
 }
 
 /**
@@ -65,7 +65,7 @@ function cleanExpense(expense: PopulatedDatabaseExpense): StringExpense {
 			name: expense.category.name,
 			colour: expense.category.colour,
 		},
-		createdAt: new Date(expense.createdAt).toLocaleDateString(),
+		date: new Date(expense.createdAt).toLocaleDateString(),
 	};
 }
 
@@ -81,6 +81,19 @@ function cleanExpense(expense: PopulatedDatabaseExpense): StringExpense {
 function cleanDate(dateString: string): Date {
 	const [year, month, date] = dateString.split('-').map(Number);
 	return new Date(year, month - 1, date);
+}
+
+/**
+ * Checks if the expense amount is in proper format and returns a legal equivalent
+ * @param amount The expense amount to be verified
+ * @returns A string 0 if illegal, otherwise the original value
+ */
+function verifyAmount(amount: string): string {
+	if (amount === '' || amount === '-' || amount === '--') {
+		return '0';
+	} else {
+		return amount;
+	}
 }
 
 /**
@@ -110,6 +123,7 @@ export async function addExpense(expense: UserInputExpense): Promise<void> {
 	try {
 		// Connects to db, and creates new expense
 		await connectDB();
+		expense.amount = verifyAmount(expense.amount);
 		await Expense.create(expense);
 	} catch (error) {
 		console.error('Error message: ', error);
@@ -127,6 +141,7 @@ export async function editExpense(newExpense: UserInputExpense): Promise<void> {
 	try {
 		// Get the old expense to be updated
 		await connectDB();
+		newExpense.amount = verifyAmount(newExpense.amount);
 		const oldExpense = await Expense.findById(newExpense.id!); // forgo typing to allow mongoose to return it's actual document type for .save()
 
 		//  Check that the expense exists

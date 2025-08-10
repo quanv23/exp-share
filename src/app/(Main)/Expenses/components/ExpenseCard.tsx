@@ -6,7 +6,7 @@
 
 import Modal from '@/app/components/Modal';
 import { StringCategory } from '@/lib/db/categories';
-import { UserInputExpense } from '@/lib/db/expenses';
+import { StringExpense, UserInputExpense } from '@/lib/db/expenses';
 import { useState } from 'react';
 import EditExpenseForm from './EditExpenseForm';
 import DeleteExpenseForm from './DeleteExpenseForm';
@@ -15,6 +15,10 @@ import DeleteExpenseForm from './DeleteExpenseForm';
  * Represents the props of the card
  */
 export interface Props {
+	/**
+	 * Expense passed to the card to display
+	 */
+	expense: StringExpense;
 	/**
 	 * List of all categories from the db to be passed down to the edit form
 	 */
@@ -30,10 +34,15 @@ export interface Props {
 }
 
 export default function ExpenseCard(props: Props) {
-	const { categories, editExpenseFunction, deleteExpenseFunction } = props;
+	const { expense, categories, editExpenseFunction, deleteExpenseFunction } =
+		props;
 
 	// State that determines whether to display the modals or not
-	const [toggleModal, setToggleModal] = useState(false);
+	const [toggleModal, setToggleModal] = useState<Boolean>(false);
+
+	// Styles the amount text to either red or green if it's negati
+	const amountStyles: string =
+		parseFloat(expense.amount) >= 0 ? 'text-myGreen' : 'text-myRed';
 
 	/**
 	 * Handles when the card is clicked and toggles the modal state
@@ -48,10 +57,14 @@ export default function ExpenseCard(props: Props) {
 				<Modal isOpen={toggleModal} onClose={handleModalClick}>
 					<div className='flex flex-col gap-4'>
 						<EditExpenseForm
+							expense={expense}
 							categories={categories}
 							editExpenseFunction={editExpenseFunction}
 						/>
-						<DeleteExpenseForm deleteExpenseFunction={deleteExpenseFunction} />
+						<DeleteExpenseForm
+							id={expense.id}
+							deleteExpenseFunction={deleteExpenseFunction}
+						/>
 					</div>
 				</Modal>
 			)}
@@ -60,10 +73,10 @@ export default function ExpenseCard(props: Props) {
 				onClick={handleModalClick}
 			>
 				<div>
-					<p>Expense</p>
-					<p className='text-xs text-myDarkGray'>Date</p>
+					<p>{expense.description}</p>
+					<p className='text-xs text-myDarkGray'>{expense.date}</p>
 				</div>
-				<div>$amount</div>
+				<div className={`${amountStyles}`}>${expense.amount}</div>
 			</div>
 		</>
 	);

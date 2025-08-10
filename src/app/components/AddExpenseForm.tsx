@@ -21,7 +21,7 @@ export interface Props {
 	/**
 	 * Function that runs when the form is submitted to add an expense to the db
 	 */
-	addExpenseFunction: (expense: UserInputExpense) => void;
+	addExpenseFunction: (expense: UserInputExpense) => Promise<void>;
 }
 
 /**
@@ -57,13 +57,15 @@ export default function AddExpenseForm(props: Props) {
 	}
 
 	/**
-	 * Handles when a form is submitted and trys to add the expense to the db
+	 * Handles when a form is submitted and tries to add the expense to the db
 	 * @param event A submit form event
 	 */
-	function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void {
+	async function handleFormSubmit(
+		event: React.FormEvent<HTMLFormElement>
+	): Promise<void> {
 		try {
 			event.preventDefault(); // Prevents refresh
-			console.log(expense);
+			await addExpenseFunction(expense);
 
 			// Clears expense fields
 			setExpense({

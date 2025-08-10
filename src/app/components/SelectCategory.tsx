@@ -38,7 +38,7 @@ export default function SelectCategory(props: Props) {
 
 	// Maps category name and ID to dropdown options
 	// Such that the names are displayed, but when selected the IDs are saved
-	const categoryElements = categories.map((category) => (
+	const categoryElements: React.ReactNode[] = categories.map((category) => (
 		<option key={category.id} value={category.id}>
 			{category.name}
 		</option>

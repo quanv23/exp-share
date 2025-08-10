@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { StringCategory } from '@/lib/db/categories';
-import { UserInputExpense } from '@/lib/db/expenses';
+import { StringExpense, UserInputExpense } from '@/lib/db/expenses';
 import SelectCategory from '@/app/components/SelectCategory';
 
 /**
@@ -21,6 +21,10 @@ type EventChange =
  */
 export interface Props {
 	/**
+	 * The expense to be edited in the db
+	 */
+	expense: StringExpense;
+	/**
 	 * Function that runs when editing is confirmed to update the changes in the db
 	 */
 	editExpenseFunction: (newExpense: UserInputExpense) => Promise<void>;
@@ -31,14 +35,14 @@ export interface Props {
 }
 
 export default function EditExpenseForm(props: Props) {
-	const { editExpenseFunction, categories } = props;
+	const { expense, editExpenseFunction, categories } = props;
 
 	// State that manages the expense data for updating in the db
-	const [expense, setExpense] = useState<UserInputExpense>({
-		description: '',
-		amount: '',
-		category: '',
-		date: '',
+	const [expenseState, setExpenseState] = useState<UserInputExpense>({
+		description: expense.description,
+		amount: expense.amount,
+		category: expense.category.id,
+		date: expense.date,
 	});
 
 	/**
@@ -50,8 +54,8 @@ export default function EditExpenseForm(props: Props) {
 		const { name, value } = event.target;
 
 		// Sets only the field that matches the name of the input element to the new value
-		setExpense((prevData) => ({
-			...prevData,
+		setExpenseState((prev) => ({
+			...prev,
 			[name]: value,
 		}));
 	}
@@ -62,15 +66,7 @@ export default function EditExpenseForm(props: Props) {
 	 */
 	function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void {
 		try {
-			console.log(expense);
-
-			// // Clears input fields
-			// setExpense({
-			// 	description: '',
-			// 	amount: '',
-			// 	category: '',
-			// 	date: '',
-			// });
+			console.log(expenseState);
 		} catch (error) {
 			console.error('Error message: ', error);
 			throw new Error('Error editing expense');
@@ -86,7 +82,7 @@ export default function EditExpenseForm(props: Props) {
 			<input
 				type='text'
 				name='description'
-				value={expense.description}
+				value={expenseState.description}
 				onChange={handleInputChange}
 				placeholder='Description'
 				className='input-field w-full'
@@ -94,14 +90,14 @@ export default function EditExpenseForm(props: Props) {
 			<input
 				type='number'
 				name='amount'
-				value={expense.amount}
+				value={expenseState.amount}
 				onChange={handleInputChange}
 				placeholder='Amount'
 				className='input-field w-full'
 			></input>
 			<SelectCategory
 				categories={categories}
-				value={expense.category}
+				value={expenseState.category}
 				width={'w-full'}
 				onChangeFunction={handleInputChange}
 			/>
