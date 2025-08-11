@@ -7,7 +7,7 @@
 import Modal from '@/app/components/Modal';
 import { StringCategory } from '@/lib/db/categories';
 import { StringExpense, UserInputExpense } from '@/lib/db/expenses';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import EditExpenseForm from './EditExpenseForm';
 import DeleteExpenseForm from './DeleteExpenseForm';
 
@@ -39,6 +39,15 @@ export default function ExpenseCard(props: Props) {
 
 	// State that determines whether to display the modals or not
 	const [toggleModal, setToggleModal] = useState<Boolean>(false);
+
+	// Side effect that disables the scroll whenever a modal is open
+	useEffect(() => {
+		if (toggleModal) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+	}, [toggleModal]);
 
 	// Styles the amount text to either red or green if it's negati
 	const amountStyles: string =

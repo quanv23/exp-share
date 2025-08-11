@@ -70,22 +70,29 @@ function cleanExpense(expense: PopulatedDatabaseExpense): StringExpense {
 }
 
 /**
- * Takes a string date of the form YYYY-MM-DD and creates a new data object
- * of the same date to be interpreted as local time because non UTC dates saved into
+ * Takes a string date and creates a new date object
+ * Checks if the date string is in the form YYYY-MM-DD because non UTC dates saved into
  * MongoDB are automatically converted to UTC, and the date constructor assumes
- * dates of the form YYYY-MM-DD are in UTC time, thus the date would be stored
- * incorrectly
- * @param dateString A string containing a date in YYYY-MM-DD format
+ * dates of the form YYYY-MM-DD are in UTC time, thus the dates in the ISO form would skip
+ * the conversion, when in actuality they should've been converted resulting in incorrect dates
+ * @param dateString A string containing a date
  * @returns A new date object of the same date but stored as local time
  */
 function cleanDate(dateString: string): Date {
-	const [year, month, date] = dateString.split('-').map(Number);
-	return new Date(year, month - 1, date);
+	const regex: RegExp = /^\d{4}-\d{2}-\d{2}/;
+
+	// Checks if string is in ISO format, and changes it to be in local time
+	if (regex.test(dateString)) {
+		const [year, month, date] = dateString.split('-').map(Number);
+		return new Date(year, month - 1, date);
+	} else {
+		return new Date(dateString);
+	}
 }
 
 /**
  * Formats the inputted amount to #.##.
- * For consistency in displaying the values so they're stored in that format
+ * For consistency in displaying the values so they're stored in the same format
  * @param amount The expense amount to be verified
  * @returns A string in #.## form
  */
@@ -118,7 +125,7 @@ function formatInputtedAmount(amount: string): string {
 
 /**
  * Gets all expenses from the db
- * @returns A promise of a list continaing all expeneses in a with string values
+ * @returns A promise of a list continaing all expeneses with string values
  */
 export async function getAllExpenses(): Promise<StringExpense[]> {
 	try {
