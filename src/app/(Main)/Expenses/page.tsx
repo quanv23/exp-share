@@ -12,6 +12,7 @@ import {
 	getAllExpenses,
 	StringExpense,
 } from '@/lib/db/expenses';
+import Link from 'next/link';
 
 export default async function page() {
 	// Gets all categories to pass to the edit form for category combo box
@@ -44,7 +45,9 @@ export default async function page() {
 				<>
 					<div className='flex gap-4'>
 						<button className='small-btn bg-white'>Filter</button>
-						<button className='small-btn bg-white'>Add</button>
+						<Link className='small-btn centered-flex bg-white' href='/'>
+							Add
+						</Link>
 					</div>
 					<div className='flex flex-col gap-2'>{expenseCards}</div>
 					<button className='big-btn bg-myGreen'>Load More</button>

@@ -93,7 +93,7 @@ export default function AddExpenseForm(props: Props) {
 				placeholder='Description'
 				className='input-field w-full'
 			></input>
-			<div className='flex gap-x-4'>
+			<div className='flex w-full gap-x-4'>
 				<input
 					type='number'
 					name='amount'
