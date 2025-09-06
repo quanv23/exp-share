@@ -51,6 +51,30 @@ export interface StringExpense {
 }
 
 /**
+ * Represents a list of expenses grouped by category
+ */
+export interface ExpensesGroupedByCategories {
+	_id: mongoose.Types.ObjectId;
+	name: string;
+	colour: string;
+	amount: mongoose.Types.Decimal128;
+	count: number;
+	expenses: PopulatedDatabaseExpense[];
+}
+
+/**
+ * Represents a list of expenses grouped by category, but populated and with all fields as strings
+ */
+export interface StringExpensesGroupedByCategories {
+	id: string;
+	name: string;
+	colour: string;
+	amount: string;
+	count: string;
+	expenses: StringExpense[];
+}
+
+/**
  * Converts a populated database expense into a usable string value representation
  * @param expense A database representation of an expense
  * @returns A string value representation of the given expense
@@ -67,6 +91,39 @@ function cleanExpense(expense: PopulatedDatabaseExpense): StringExpense {
 		},
 		date: new Date(expense.createdAt).toLocaleDateString(),
 	};
+}
+
+/**
+ * Converts expenses grouped by categories into a usable string value representation
+ * @param expensesByCategory A list of expenses grouped by category in their db representation
+ * @returns A string value representation of the entire list of expenses
+ */
+function cleanExpenseByCategory(
+	expensesByCategory: ExpensesGroupedByCategories[]
+) {
+	const result: StringExpensesGroupedByCategories[] = [];
+
+	// Converts all grouped expenses to string representation
+	expensesByCategory.forEach((categoryGroup: ExpensesGroupedByCategories) => {
+		// Converts all expenses in the current group to a string representation
+		const stringExpenses: StringExpense[] = categoryGroup.expenses.map(
+			(expense) => cleanExpense(expense)
+		);
+
+		const stringCategoryGroup: StringExpensesGroupedByCategories = {
+			id: categoryGroup._id.toString(),
+			name: categoryGroup.name,
+			colour: categoryGroup.colour,
+			amount: categoryGroup.amount.toString(),
+			count: categoryGroup.count.toString(),
+			expenses: stringExpenses,
+		};
+
+		// Adds the converted group to the return list
+		result.push(stringCategoryGroup);
+	});
+
+	return result;
 }
 
 /**
@@ -137,6 +194,58 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
 	} catch (error) {
 		console.error('Error message: ', error);
 		throw new Error('Get all expeneses operation failed');
+	}
+}
+
+/**
+ * Gets all expenses from the db grouped by their categories
+ * @returns A promise of a list of all expenses grouped by their categories with all fields converted to string
+ */
+export async function getAllExpensesByCategory() {
+	try {
+		await connectDB();
+
+		// Groups expenses by categories
+		const expenses: ExpensesGroupedByCategories[] = await Expense.aggregate([
+			{
+				// Looks up the categories since they're referenced by ObjectId in Expense schema
+				$lookup: {
+					from: 'categories',
+					localField: 'category',
+					foreignField: '_id',
+					as: 'categoryInfo',
+				},
+			},
+			{ $unwind: '$categoryInfo' },
+			{
+				// Groups expenses, and calculates the sum and count
+				$group: {
+					_id: {
+						id: '$categoryInfo._id',
+						name: '$categoryInfo.name',
+						colour: '$categoryInfo.colour',
+					},
+					amount: { $sum: '$amount' },
+					count: { $sum: 1 },
+					expenses: { $push: '$$ROOT' },
+				},
+			},
+			{
+				$project: {
+					_id: '$_id.id',
+					name: '$_id.name',
+					colour: '$_id.colour',
+					amount: 1,
+					count: 1,
+					expenses: 1,
+				},
+			},
+		]);
+
+		return cleanExpenseByCategory(expenses);
+	} catch (error) {
+		console.error('Error message:', error);
+		throw new Error('Get all expenses by category operation failed');
 	}
 }
 
