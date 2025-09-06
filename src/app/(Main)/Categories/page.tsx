@@ -10,6 +10,8 @@ import { DateRangePicker } from '@/tremorComponents/DatePicker';
 import { useEffect, useState } from 'react';
 import { StringExpensesGroupedByCategories } from '@/lib/db/expenses';
 import { DonutChart } from '@/tremorComponents/DonutChart';
+import { stringFloatToFloat } from '@/lib/globalFunctions';
+import CategoryCard from './components/CategoryCard';
 
 export default function page() {
 	// State that determines whether the graph shows expense/income data
@@ -90,12 +92,22 @@ export default function page() {
 		}
 	}
 
+	function getCategoryExpenses(id: string) {
+		const category = categories.filter((category) => category.id === id);
+		return category[0].expenses;
+	}
+
 	// Creates the cards for displaying each category
 	const categoryCards = displayCategories.map(
 		(category: StringExpensesGroupedByCategories) => (
-			<div key={category.id}>
-				{category.name} : {category.amount} : {category.colour}
-			</div>
+			<CategoryCard
+				key={category.id}
+				id={category.id}
+				name={category.name}
+				amount={category.amount}
+				colour={category.colour}
+				expenses={getCategoryExpenses(category.id)}
+			/>
 		)
 	);
 
@@ -127,9 +139,23 @@ export default function page() {
 			</div>
 			<div className='block centered-flex flex-col gap-4 bg-white p-4'>
 				<DonutChart
-					data={[{ name: 'Victor', amount: 100 }]}
+					data={displayCategories.map(
+						(category: StringExpensesGroupedByCategories) => {
+							return {
+								name: category.name,
+								amount: stringFloatToFloat(category.amount),
+							};
+						}
+					)}
 					category='name'
 					value='amount'
+					// This error occurs because colors : "colour" | "another colour" | "another colour" and so on
+					// But because we're passing a string[], typescript is scared that this string can be any string literal not in the colors type
+					// But since the user is forced to only select colours within the AvailableChartColour we can ignore this error
+					// @ts-ignore
+					colors={displayCategories.map(
+						(category: StringExpensesGroupedByCategories) => category.colour
+					)}
 					showLabel={true}
 					valueFormatter={(number: number) =>
 						`$${Intl.NumberFormat('us').format(number).toString()}`
@@ -137,7 +163,7 @@ export default function page() {
 				/>
 				<DateRangePicker />
 			</div>
-			<div>{categoryCards}</div>
+			<div className='flex flex-col gap-2'>{categoryCards}</div>
 		</div>
 	);
 }

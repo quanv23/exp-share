@@ -49,16 +49,15 @@ export default function ExpenseCard(props: Props) {
 		}
 	}, [toggleModal]);
 
-	// Styles the amount text to either red or green if it's negati
-	const amountStyles: string =
-		parseFloat(expense.amount) >= 0 ? 'text-myGreen' : 'text-myRed';
-
 	/**
 	 * Handles when the card is clicked and toggles the modal state
 	 */
 	function handleModalClick(): void {
 		setToggleModal((prev) => !prev);
 	}
+	// Styles the amount text to either red or green if it's negative
+	const amountStyles: string =
+		parseFloat(expense.amount) >= 0 ? 'text-myGreen' : 'text-myRed';
 
 	return (
 		<>
