@@ -4,7 +4,6 @@
  */
 
 import { StringExpense } from '@/lib/db/expenses';
-
 /**
  * Represents the props of the card
  */

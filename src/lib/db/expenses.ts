@@ -207,14 +207,15 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
 export async function getAllExpensesByCategory(
 	from: string | null,
 	to: string | null,
-	isExpense: string | null
+	isExpense: string | null,
+	categoryId: string | null = null
 ): Promise<StringExpensesGroupedByCategories[]> {
 	// Generates date range filter for the query depending if from and to are valid date strings
-	const match: any = {};
+	const dataRangeMatch: any = {};
 	if (from && to && from !== 'undefined' && to !== 'undefined') {
-		match.createdAt = {};
-		if (from) match.createdAt.$gte = new Date(from);
-		if (to) match.createdAt.$lte = new Date(to);
+		dataRangeMatch.createdAt = {};
+		if (from) dataRangeMatch.createdAt.$gte = new Date(from);
+		if (to) dataRangeMatch.createdAt.$lte = new Date(to);
 	}
 
 	try {
@@ -223,7 +224,7 @@ export async function getAllExpensesByCategory(
 		// Groups expenses by categories
 		const expenses: ExpensesGroupedByCategories[] = await Expense.aggregate([
 			{
-				$match: match,
+				$match: dataRangeMatch,
 			},
 			{
 				// Looks up the categories since they're referenced by ObjectId in Expense schema
@@ -252,6 +253,13 @@ export async function getAllExpensesByCategory(
 				// Filters the grouped categories by expense/income
 				$match: {
 					total: isExpense === 'true' ? { $lt: 0 } : { $gt: 0 },
+					$expr: {
+						$cond: [
+							{ $ifNull: [categoryId, true] }, // if categoryId is null → pass all
+							true, // include the document
+							{ $eq: ['$_id.id', new mongoose.Types.ObjectId(categoryId!)] }, // else match id
+						],
+					},
 				},
 			},
 			{

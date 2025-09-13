@@ -16,6 +16,7 @@ import { DonutChart } from '@/tremorComponents/DonutChart';
 import { stringFloatToFloat } from '@/lib/globalFunctions';
 import CategoryCard from './components/CategoryCard';
 import { DateRange } from 'react-day-picker';
+import Link from 'next/link';
 
 export default function page() {
 	// State that determines whether the graph shows expense/income data
@@ -72,20 +73,7 @@ export default function page() {
 	}, [showExpense, dateRange]);
 
 	/**
-	 * A helper function that checks if a category expense group is an expense or income
-	 * @param category The category expense group to be checked
-	 * @returns A boolean value indicating if it is an expense or not
-	 */
-	function isExpense(category: StringExpensesGroupedByCategories) {
-		if (parseFloat(category.total) < 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Helper function that gets the list of all expenses from the state containing all categories by Id
+	 * Helper function that gets the list of expenses of a category currently being displayed by ID
 	 * @param id The id of the category
 	 * @returns The list of all expenses belonging to the category
 	 */
@@ -95,17 +83,29 @@ export default function page() {
 	}
 
 	// Creates the cards for displaying each category
+	// The card is nested inside of Link because on this page we have access to the search parameters which are required to refetch the data
 	const categoryCards = displayCategories.map(
 		(category: StringExpensesGroupedByCategories) => (
-			<CategoryCard
+			<Link
 				key={category.id}
-				id={category.id}
-				name={category.name}
-				amount={category.total}
-				colour={category.colour}
-				expenses={getCategoryExpenses(category.id)}
-				percent={(stringFloatToFloat(category.total) / totalAmount) * 100}
-			/>
+				href={{
+					pathname: `/Categories/${category.id}`,
+					query: {
+						isExpense: `${showExpense}`,
+						from: `${dateRange?.from?.toISOString()}`,
+						to: `${dateRange?.to?.toISOString()}`,
+					},
+				}}
+			>
+				<CategoryCard
+					id={category.id}
+					name={category.name}
+					amount={category.total}
+					colour={category.colour}
+					expenses={getCategoryExpenses(category.id)}
+					percent={(stringFloatToFloat(category.total) / totalAmount) * 100}
+				/>
+			</Link>
 		)
 	);
 
