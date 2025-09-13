@@ -57,7 +57,7 @@ export interface ExpensesGroupedByCategories {
 	_id: mongoose.Types.ObjectId;
 	name: string;
 	colour: string;
-	amount: mongoose.Types.Decimal128;
+	total: mongoose.Types.Decimal128;
 	count: number;
 	expenses: PopulatedDatabaseExpense[];
 }
@@ -69,7 +69,7 @@ export interface StringExpensesGroupedByCategories {
 	id: string;
 	name: string;
 	colour: string;
-	amount: string;
+	total: string;
 	count: string;
 	expenses: StringExpense[];
 }
@@ -100,7 +100,7 @@ function cleanExpense(expense: PopulatedDatabaseExpense): StringExpense {
  */
 function cleanExpenseByCategory(
 	expensesByCategory: ExpensesGroupedByCategories[]
-) {
+): StringExpensesGroupedByCategories[] {
 	const result: StringExpensesGroupedByCategories[] = [];
 
 	// Converts all grouped expenses to string representation
@@ -114,7 +114,7 @@ function cleanExpenseByCategory(
 			id: categoryGroup._id.toString(),
 			name: categoryGroup.name,
 			colour: categoryGroup.colour,
-			amount: categoryGroup.amount.toString(),
+			total: categoryGroup.total.toString(),
 			count: categoryGroup.count.toString(),
 			expenses: stringExpenses,
 		};
@@ -199,14 +199,32 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
 
 /**
  * Gets all expenses from the db grouped by their categories
+ * @from A string in ISO date format that filters all expenses to be greater than this date
+ * @to A string in ISO date format that filters all expenses to be less than this date
+ * @isExpense A string equal to true/false indicating whether to filter the groups by expense/income
  * @returns A promise of a list of all expenses grouped by their categories with all fields converted to string
  */
-export async function getAllExpensesByCategory() {
+export async function getAllExpensesByCategory(
+	from: string | null,
+	to: string | null,
+	isExpense: string | null
+): Promise<StringExpensesGroupedByCategories[]> {
+	// Generates date range filter for the query depending if from and to are valid date strings
+	const match: any = {};
+	if (from && to && from !== 'undefined' && to !== 'undefined') {
+		match.createdAt = {};
+		if (from) match.createdAt.$gte = new Date(from);
+		if (to) match.createdAt.$lte = new Date(to);
+	}
+
 	try {
 		await connectDB();
 
 		// Groups expenses by categories
 		const expenses: ExpensesGroupedByCategories[] = await Expense.aggregate([
+			{
+				$match: match,
+			},
 			{
 				// Looks up the categories since they're referenced by ObjectId in Expense schema
 				$lookup: {
@@ -225,17 +243,24 @@ export async function getAllExpensesByCategory() {
 						name: '$categoryInfo.name',
 						colour: '$categoryInfo.colour',
 					},
-					amount: { $sum: '$amount' },
+					total: { $sum: '$amount' },
 					count: { $sum: 1 },
 					expenses: { $push: '$$ROOT' },
 				},
 			},
 			{
+				// Filters the grouped categories by expense/income
+				$match: {
+					total: isExpense === 'true' ? { $lt: 0 } : { $gt: 0 },
+				},
+			},
+			{
+				// Formats the return object to match the type
 				$project: {
 					_id: '$_id.id',
 					name: '$_id.name',
 					colour: '$_id.colour',
-					amount: 1,
+					total: 1,
 					count: 1,
 					expenses: 1,
 				},

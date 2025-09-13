@@ -8,76 +8,68 @@
 import ExpenseIncomeButton from '@/app/components/ExpenseIncomeButton';
 import { DateRangePicker } from '@/tremorComponents/DatePicker';
 import { useEffect, useState } from 'react';
-import { StringExpensesGroupedByCategories } from '@/lib/db/expenses';
+import {
+	StringExpense,
+	StringExpensesGroupedByCategories,
+} from '@/lib/db/expenses';
 import { DonutChart } from '@/tremorComponents/DonutChart';
 import { stringFloatToFloat } from '@/lib/globalFunctions';
 import CategoryCard from './components/CategoryCard';
+import { DateRange } from 'react-day-picker';
 
 export default function page() {
 	// State that determines whether the graph shows expense/income data
 	const [showExpense, setShowExpense] = useState<Boolean>(true);
-
-	// State that contains all categories from the db, and is filtered depending on selected options
-	const [categories, setCategories] = useState<
-		StringExpensesGroupedByCategories[]
-	>([]);
 
 	// State the contains the categories to be displayed which are filtered from all the categories from the db
 	const [displayCategories, setDisplayCategories] = useState<
 		StringExpensesGroupedByCategories[]
 	>([]);
 
-	// Gets all categories from db only when initially mounted
-	useEffect(() => {
-		/**
-		 * Fetches all categories from the database through an API call since the page must be a client component
-		 */
-		async function fetchCategories(): Promise<void> {
-			try {
-				const categories = await fetch('/api/expenses');
+	// State the contains the total amount for the displayed categories
+	const [totalAmount, setTotalAmount] = useState(0);
 
-				// Throws an error is response is not ok
+	// State that contains the date date range for the displayed categories
+	const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
+	// Fetches and refilters the data from the db on mount, and anytime a filter is changed
+	useEffect(() => {
+		console.log('useEffect triggered');
+
+		/**
+		 * Fetches expenses grouped by categories from the db, and applies the relevant filters
+		 */
+		async function fetchFilteredCategories(): Promise<void> {
+			try {
+				// Fetches categories with filters
+				const categories = await fetch(
+					`/api/expenses/?isExpense=${showExpense}&from=${dateRange?.from?.toISOString()}&to=${dateRange?.to?.toISOString()}`
+				);
+
 				if (!categories.ok) {
 					throw new Error();
 				}
 
-				// Converts json -> object and sets the state
+				// Converts json -> object
 				const data: StringExpensesGroupedByCategories[] =
 					await categories.json();
 
-				// Sets the categories state, as well as the display state since the page always initially displays expenses
-				setCategories(data);
-				setDisplayCategories(
-					data.filter((category: StringExpensesGroupedByCategories) =>
-						isExpense(category)
+				setDisplayCategories(data);
+
+				// Calculates and sets the total amount
+				setTotalAmount(
+					data.reduce(
+						(acc, category) => acc + stringFloatToFloat(category.total),
+						0
 					)
 				);
 			} catch (error) {
 				console.error('Error message: ', error);
-				throw new Error('Failed to fetch categories');
+				throw new Error('Failed to fetch filtered categories');
 			}
 		}
-
-		fetchCategories();
-		console.log(`useEffect empty dependency`);
-	}, []);
-
-	// Filters the display state anytime expense/income is toggled, or the date range is changed
-	useEffect(() => {
-		if (categories.length === 0) return; // Skips the intial render
-
-		// Filters the display categories to only expenses or income
-		if (showExpense) {
-			setDisplayCategories(
-				categories.filter((category) => isExpense(category))
-			);
-		} else {
-			setDisplayCategories(
-				categories.filter((category) => !isExpense(category))
-			);
-		}
-		console.log(`useEffect showExpense`);
-	}, [showExpense]);
+		fetchFilteredCategories();
+	}, [showExpense, dateRange]);
 
 	/**
 	 * A helper function that checks if a category expense group is an expense or income
@@ -85,15 +77,20 @@ export default function page() {
 	 * @returns A boolean value indicating if it is an expense or not
 	 */
 	function isExpense(category: StringExpensesGroupedByCategories) {
-		if (parseFloat(category.amount) < 0) {
+		if (parseFloat(category.total) < 0) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	function getCategoryExpenses(id: string) {
-		const category = categories.filter((category) => category.id === id);
+	/**
+	 * Helper function that gets the list of all expenses from the state containing all categories by Id
+	 * @param id The id of the category
+	 * @returns The list of all expenses belonging to the category
+	 */
+	function getCategoryExpenses(id: string): StringExpense[] {
+		const category = displayCategories.filter((category) => category.id === id);
 		return category[0].expenses;
 	}
 
@@ -104,9 +101,10 @@ export default function page() {
 				key={category.id}
 				id={category.id}
 				name={category.name}
-				amount={category.amount}
+				amount={category.total}
 				colour={category.colour}
 				expenses={getCategoryExpenses(category.id)}
+				percent={(stringFloatToFloat(category.total) / totalAmount) * 100}
 			/>
 		)
 	);
@@ -123,6 +121,11 @@ export default function page() {
 	 */
 	function handleShowIncome(): void {
 		setShowExpense(false);
+	}
+
+	// Handles when the date range is selected
+	function handleDateRangeChange(value: DateRange | undefined) {
+		setDateRange(value);
 	}
 
 	return (
@@ -143,12 +146,12 @@ export default function page() {
 						(category: StringExpensesGroupedByCategories) => {
 							return {
 								name: category.name,
-								amount: stringFloatToFloat(category.amount),
+								total: stringFloatToFloat(category.total),
 							};
 						}
 					)}
 					category='name'
-					value='amount'
+					value='total'
 					// This error occurs because colors : "colour" | "another colour" | "another colour" and so on
 					// But because we're passing a string[], typescript is scared that this string can be any string literal not in the colors type
 					// But since the user is forced to only select colours within the AvailableChartColour we can ignore this error
@@ -161,9 +164,9 @@ export default function page() {
 						`$${Intl.NumberFormat('us').format(number).toString()}`
 					}
 				/>
-				<DateRangePicker />
+				<DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
 			</div>
-			<div className='flex flex-col gap-2'>{categoryCards}</div>
+			<div className='flex flex-col gap-4'>{categoryCards}</div>
 		</div>
 	);
 }
