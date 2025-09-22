@@ -3,23 +3,28 @@
  * Allows for editing, deleting, and filtering of expenses
  * @module
  */
+'use client';
 
 import ExpenseCard from './components/ExpenseCard';
-import { getAllCategories, StringCategory } from '@/lib/db/categories';
-import { getAllExpenses, StringExpense } from '@/lib/db/expenses';
+import { StringExpense } from '@/lib/db/expenses';
 import Link from 'next/link';
+import { useExpenseStore } from '@/lib/store/useExpenseStore';
+import { useEffect } from 'react';
 
-export default async function page() {
-	// Gets all categories to pass to the edit form for category combo box
-	const categories: StringCategory[] = await getAllCategories();
+export default function page() {
+	const { expenses, fetchExpenses } = useExpenseStore();
 
-	// Gets all expenses to display
-	const expenses: StringExpense[] = await getAllExpenses();
+	// Fetches expenses for store on initial render
+	useEffect(() => {
+		fetchExpenses();
+	}, []);
 
 	// Creates the cards for displaying each expense
-	const expenseCards: React.ReactNode[] = expenses.map((expense) => {
-		return <ExpenseCard key={expense.id} expense={expense} />;
-	});
+	const expenseCards: React.ReactNode[] = expenses.map(
+		(expense: StringExpense) => {
+			return <ExpenseCard key={expense.id} expense={expense} />;
+		}
+	);
 
 	return (
 		<div className="flex flex-col justify-center pt-5 pl-5 pr-5 pb-21 gap-4">

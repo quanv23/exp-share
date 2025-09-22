@@ -42,18 +42,19 @@ export default function page() {
 		 */
 		async function fetchFilteredCategories(): Promise<void> {
 			try {
-				// Fetches categories with filters
-				const categories = await fetch(
-					`/api/expenses/?isExpense=${showExpense}&from=${dateRange?.from?.toISOString()}&to=${dateRange?.to?.toISOString()}`
-				);
+				// // Fetches categories with filters
+				// const categories = await fetch(
+				// 	`/api/expenses/?isExpense=${showExpense}&from=${dateRange?.from?.toISOString()}&to=${dateRange?.to?.toISOString()}`
+				// );
 
-				if (!categories.ok) {
-					throw new Error();
-				}
+				// if (!categories.ok) {
+				// 	throw new Error();
+				// }
 
-				// Converts json -> object
-				const data: StringExpensesGroupedByCategories[] =
-					await categories.json();
+				// // Converts json -> object
+				// const data: StringExpensesGroupedByCategories[] =
+				// 	await categories.json();
+				const data: StringExpensesGroupedByCategories[] = [];
 
 				setDisplayCategories(data);
 

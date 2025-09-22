@@ -217,11 +217,6 @@ export async function getExpensesByCategory(
 		if (from) dataRangeMatch.createdAt.$gte = new Date(from);
 		if (to) dataRangeMatch.createdAt.$lte = new Date(to);
 	}
-	console.log('INSIDE THE QUERY');
-	console.log(from);
-	console.log(to);
-	console.log(isExpense);
-	console.log(categoryId);
 
 	try {
 		await connectDB();
@@ -329,7 +324,6 @@ export async function editExpense(newExpense: UserInputExpense): Promise<void> {
 		oldExpense.category = new mongoose.Types.ObjectId(newExpense.category);
 		oldExpense.createdAt = cleanDate(newExpense.date!);
 		await oldExpense.save();
-		console.log('Editing Expense');
 	} catch (error) {
 		console.error('Error message: ', error);
 		throw new Error('Edit expense operation failed');

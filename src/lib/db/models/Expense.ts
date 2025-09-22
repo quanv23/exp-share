@@ -6,6 +6,12 @@
 import mongoose from 'mongoose';
 
 /**
+ * Import due to MissingSchemaError: Schema hasn't been registered for model "Category"
+ * Honestly I don't know why but this fixes it???
+ */
+import '@/lib/db/models/Category';
+
+/**
  * Represents a database representation of an expense
  */
 export interface DatabaseExpense {

@@ -3,7 +3,7 @@
  * @module
  */
 
-import mongoose, { mongo } from 'mongoose';
+import mongoose from 'mongoose';
 
 /**
  * Represents a database representation of a category

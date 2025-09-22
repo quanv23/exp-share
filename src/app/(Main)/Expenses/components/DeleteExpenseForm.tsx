@@ -4,6 +4,7 @@
  */
 'use client';
 
+import { useExpenseStore } from '@/lib/store/useExpenseStore';
 import { useState } from 'react';
 
 /**
@@ -22,6 +23,7 @@ export interface Props {
 
 export default function DeleteExpenseForm(props: Props) {
 	const { id, handleModalClick } = props;
+	const { fetchExpenses } = useExpenseStore();
 
 	// State that manages whether the delete button has been clicked and should show the confirmation buttons
 	const [toggleConfirmation, setToggleConfirmation] = useState<boolean>(false);
@@ -56,6 +58,9 @@ export default function DeleteExpenseForm(props: Props) {
 			if (!res.ok) {
 				throw new Error();
 			}
+
+			// Refetches expenses to refresh the store
+			fetchExpenses();
 
 			// Closes modal
 			handleModalClick();

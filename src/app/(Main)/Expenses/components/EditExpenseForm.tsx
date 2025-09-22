@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { StringCategory } from '@/lib/db/categories';
 import { StringExpense, UserInputExpense } from '@/lib/db/expenses';
 import { DatePicker } from '@/tremorComponents/DatePicker';
+import { useExpenseStore } from '@/lib/store/useExpenseStore';
 import SelectCategory from '@/app/components/SelectCategory';
 
 /**
@@ -33,6 +34,7 @@ export interface Props {
 
 export default function EditExpenseForm(props: Props) {
 	const { expense, handleModalClick } = props;
+	const { fetchExpenses } = useExpenseStore();
 
 	// State that contains the categories
 	const [categories, setCategories] = useState<StringCategory[]>([]);
@@ -121,6 +123,9 @@ export default function EditExpenseForm(props: Props) {
 			if (!res.ok) {
 				throw new Error();
 			}
+
+			// Refetches expenses to refresh store
+			fetchExpenses();
 
 			// Closes modal
 			handleModalClick();
