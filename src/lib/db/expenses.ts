@@ -168,7 +168,7 @@ function formatInputtedAmount(amount: string): string {
 	let [left, right = ''] = amount.split('.');
 
 	// Remove leading zeros on the left, but keep 0 if empty
-	left = left.replace(/0+(?=\d+)/, '') || '0';
+	left = left.replace(/^0+/, '') || '0';
 
 	// Truncate or pad right side to exactly two digits
 	if (right.length > 2) {
@@ -204,7 +204,7 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
  * @isExpense A string equal to true/false indicating whether to filter the groups by expense/income
  * @returns A promise of a list of all expenses grouped by their categories with all fields converted to string
  */
-export async function getAllExpensesByCategory(
+export async function getExpensesByCategory(
 	from: string | null,
 	to: string | null,
 	isExpense: string | null,
@@ -217,6 +217,11 @@ export async function getAllExpensesByCategory(
 		if (from) dataRangeMatch.createdAt.$gte = new Date(from);
 		if (to) dataRangeMatch.createdAt.$lte = new Date(to);
 	}
+	console.log('INSIDE THE QUERY');
+	console.log(from);
+	console.log(to);
+	console.log(isExpense);
+	console.log(categoryId);
 
 	try {
 		await connectDB();
@@ -237,6 +242,12 @@ export async function getAllExpensesByCategory(
 			},
 			{ $unwind: '$categoryInfo' },
 			{
+				// If the optional category id is given, only gets that category's data
+				$match: categoryId
+					? { 'categoryInfo._id': new mongoose.Types.ObjectId(categoryId) }
+					: {},
+			},
+			{
 				// Groups expenses, and calculates the sum and count
 				$group: {
 					_id: {
@@ -253,13 +264,6 @@ export async function getAllExpensesByCategory(
 				// Filters the grouped categories by expense/income
 				$match: {
 					total: isExpense === 'true' ? { $lt: 0 } : { $gt: 0 },
-					$expr: {
-						$cond: [
-							{ $ifNull: [categoryId, true] }, // if categoryId is null → pass all
-							true, // include the document
-							{ $eq: ['$_id.id', new mongoose.Types.ObjectId(categoryId!)] }, // else match id
-						],
-					},
 				},
 			},
 			{
@@ -325,6 +329,7 @@ export async function editExpense(newExpense: UserInputExpense): Promise<void> {
 		oldExpense.category = new mongoose.Types.ObjectId(newExpense.category);
 		oldExpense.createdAt = cleanDate(newExpense.date!);
 		await oldExpense.save();
+		console.log('Editing Expense');
 	} catch (error) {
 		console.error('Error message: ', error);
 		throw new Error('Edit expense operation failed');

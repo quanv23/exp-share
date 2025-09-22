@@ -33,7 +33,7 @@ export interface DatabaseExpense {
 
 const expenseSchema: mongoose.Schema<DatabaseExpense> = new mongoose.Schema({
 	description: String,
-	amount: mongoose.Types.Decimal128,
+	amount: mongoose.Schema.Types.Decimal128,
 	category: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Category',

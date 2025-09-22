@@ -6,12 +6,7 @@
 
 import ExpenseCard from './components/ExpenseCard';
 import { getAllCategories, StringCategory } from '@/lib/db/categories';
-import {
-	editExpense,
-	deleteExpense,
-	getAllExpenses,
-	StringExpense,
-} from '@/lib/db/expenses';
+import { getAllExpenses, StringExpense } from '@/lib/db/expenses';
 import Link from 'next/link';
 
 export default async function page() {
@@ -23,34 +18,26 @@ export default async function page() {
 
 	// Creates the cards for displaying each expense
 	const expenseCards: React.ReactNode[] = expenses.map((expense) => {
-		return (
-			<ExpenseCard
-				key={expense.id}
-				expense={expense}
-				categories={categories}
-				editExpenseFunction={editExpense}
-				deleteExpenseFunction={deleteExpense}
-			/>
-		);
+		return <ExpenseCard key={expense.id} expense={expense} />;
 	});
 
 	return (
-		<div className='flex flex-col justify-center pt-5 pl-5 pr-5 pb-21 gap-4'>
-			<div className='centered-flex block w-full h-36 bg-myGreen'>
-				<h1 className='text-3xl font-bold text-white'>Expenses</h1>
+		<div className="flex flex-col justify-center pt-5 pl-5 pr-5 pb-21 gap-4">
+			<div className="centered-flex block w-full h-36 bg-myGreen">
+				<h1 className="text-3xl font-bold text-white">Expenses</h1>
 			</div>
 			{expenseCards.length === 0 ? (
-				<div className='flex justify-center'>No expenses to display</div>
+				<div className="flex justify-center">No expenses to display</div>
 			) : (
 				<>
-					<div className='flex gap-4'>
-						<button className='small-btn bg-white'>Filter</button>
-						<Link className='small-btn centered-flex bg-white' href='/'>
+					<div className="flex gap-4">
+						<button className="small-btn bg-white">Filter</button>
+						<Link className="small-btn centered-flex bg-white" href="/">
 							Add
 						</Link>
 					</div>
-					<div className='flex flex-col gap-2'>{expenseCards}</div>
-					<button className='big-btn bg-myGreen'>Load More</button>
+					<div className="flex flex-col gap-2">{expenseCards}</div>
+					<button className="big-btn bg-myGreen">Load More</button>
 				</>
 			)}
 		</div>

@@ -3,18 +3,48 @@
  * @module
  */
 
-import { getAllExpensesByCategory } from '@/lib/db/expenses';
+import {
+	getExpensesByCategory,
+	deleteExpense,
+	editExpense,
+} from '@/lib/db/expenses';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Gets all categories
+// Gets all expenses grouped by category
 export async function GET(req: NextRequest): Promise<Response> {
-	const { searchParams } = new URL(req.url);
+	try {
+		const { searchParams } = new URL(req.url);
 
-	// Gets the search parameters to pass to the query
-	const from: string | null = searchParams.get('from');
-	const to: string | null = searchParams.get('to');
-	const isExpense: string | null = searchParams.get('isExpense');
+		// Gets the search parameters to pass to the query
+		const from: string | null = searchParams.get('from');
+		const to: string | null = searchParams.get('to');
+		const isExpense: string | null = searchParams.get('isExpense');
 
-	const expenses = await getAllExpensesByCategory(from, to, isExpense);
-	return NextResponse.json(expenses);
+		const expenses = await getExpensesByCategory(from, to, isExpense);
+		return NextResponse.json(expenses);
+	} catch (error) {
+		return NextResponse.json({}, { status: 400 });
+	}
+}
+
+// Deletes one expense by id
+export async function DELETE(req: NextRequest): Promise<Response> {
+	try {
+		const { id } = await req.json();
+		const res = await deleteExpense(id);
+		return NextResponse.json(true, { status: 200 });
+	} catch (error) {
+		return NextResponse.json(false, { status: 400 });
+	}
+}
+
+// Edits on expense by id
+export async function PATCH(req: NextRequest): Promise<Response> {
+	try {
+		const { newExpense } = await req.json();
+		const res = await editExpense(newExpense);
+		return NextResponse.json(true, { status: 200 });
+	} catch (error) {
+		return NextResponse.json(false, { status: 400 });
+	}
 }

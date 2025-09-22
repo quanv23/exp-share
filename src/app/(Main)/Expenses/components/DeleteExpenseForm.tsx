@@ -15,13 +15,13 @@ export interface Props {
 	 */
 	id: string;
 	/**
-	 * Function that runs when deletion is confirmed and deletes the specified expense from the db
+	 * Callback function that toggles the modal to close after deletion is confirmed
 	 */
-	deleteExpenseFunction: (id: string) => Promise<void>;
+	handleModalClick: () => void;
 }
 
 export default function DeleteExpenseForm(props: Props) {
-	const { id, deleteExpenseFunction } = props;
+	const { id, handleModalClick } = props;
 
 	// State that manages whether the delete button has been clicked and should show the confirmation buttons
 	const [toggleConfirmation, setToggleConfirmation] = useState<boolean>(false);
@@ -36,9 +36,29 @@ export default function DeleteExpenseForm(props: Props) {
 	/**
 	 * Handles when the delete is confirmed and deletes the expense from the db
 	 */
-	async function handleDeleteConfirmed(): Promise<void> {
+	async function handleDeleteConfirmed(
+		event: React.FormEvent<HTMLButtonElement>
+	): Promise<void> {
 		try {
-			await deleteExpenseFunction(id);
+			event.preventDefault();
+
+			// Attempts to delete expense
+			const res = await fetch('/api/expenses', {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					id: id,
+				}),
+			});
+
+			if (!res.ok) {
+				throw new Error();
+			}
+
+			// Closes modal
+			handleModalClick();
 		} catch (error) {
 			console.error('Error message: ', error);
 			throw new Error('Error deleting expense');
@@ -46,20 +66,20 @@ export default function DeleteExpenseForm(props: Props) {
 	}
 
 	return (
-		<form className='center-flex rounded-xl shadow-md w-64 bg-white p-6 space-y-6'>
+		<form className="center-flex rounded-xl shadow-md w-64 bg-white p-6 space-y-6">
 			{toggleConfirmation ? (
-				<div className='flex'>
-					<button onClick={handleDeleteClick} className='w-full'>
+				<div className="flex">
+					<button onClick={handleDeleteClick} className="w-full">
 						Cancel
 					</button>
-					<button onClick={handleDeleteConfirmed} className='big-btn bg-myRed'>
+					<button onClick={handleDeleteConfirmed} className="big-btn bg-myRed">
 						Confirm
 					</button>
 				</div>
 			) : (
 				<button
 					onClick={handleDeleteClick}
-					className='big-btn bg-myRed text-white'
+					className="big-btn bg-myRed text-white"
 				>
 					Delete
 				</button>

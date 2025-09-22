@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StringCategory } from '@/lib/db/categories';
 import { StringExpense, UserInputExpense } from '@/lib/db/expenses';
 import { DatePicker } from '@/tremorComponents/DatePicker';
@@ -26,17 +26,16 @@ export interface Props {
 	 */
 	expense: StringExpense;
 	/**
-	 * Function that runs when editing is confirmed to update the changes in the db
+	 * Callback function to close the modal after edit is made
 	 */
-	editExpenseFunction: (newExpense: UserInputExpense) => Promise<void>;
-	/**
-	 * List of all categories to pass down to select category combox box
-	 */
-	categories: StringCategory[];
+	handleModalClick: () => void;
 }
 
 export default function EditExpenseForm(props: Props) {
-	const { expense, editExpenseFunction, categories } = props;
+	const { expense, handleModalClick } = props;
+
+	// State that contains the categories
+	const [categories, setCategories] = useState<StringCategory[]>([]);
 
 	// State that manages the expense data for updating in the db
 	const [expenseState, setExpenseState] = useState<UserInputExpense>({
@@ -54,9 +53,25 @@ export default function EditExpenseForm(props: Props) {
 		new Date(expense.date)
 	);
 
+	// Fetches categories from the db when page is first rendered
+	useEffect(() => {
+		async function fetchCategories(): Promise<void> {
+			const categories = await fetch('/api/categories');
+
+			if (!categories.ok) {
+				throw new Error();
+			}
+
+			const data: StringCategory[] = await categories.json();
+			setCategories(data);
+		}
+
+		fetchCategories();
+	}, []);
+
 	/**
 	 * Handles when an input field in the form is changed and updates the expense state.
-	 * NOTE: Name of the input element must be the exact same as it's corresponding field in the expense state.
+	 * @remarks Name of the input element must be the exact same as it's corresponding field in the expense state.
 	 * @param event A change in a Html input element event
 	 */
 	function handleInputChange(event: EventChange): void {
@@ -86,9 +101,29 @@ export default function EditExpenseForm(props: Props) {
 	 * Handles when the form is submitted and attempts to update db with new information
 	 * @param event A form submission event
 	 */
-	function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void {
+	async function handleFormSubmit(
+		event: React.FormEvent<HTMLFormElement>
+	): Promise<void> {
 		try {
-			editExpenseFunction(expenseState);
+			event.preventDefault();
+
+			// Attempts to edit expense
+			const res = await fetch('/api/expenses', {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					newExpense: expenseState,
+				}),
+			});
+
+			if (!res.ok) {
+				throw new Error();
+			}
+
+			// Closes modal
+			handleModalClick();
 		} catch (error) {
 			console.error('Error message: ', error);
 			throw new Error('Error editing expense');
@@ -98,24 +133,24 @@ export default function EditExpenseForm(props: Props) {
 	return (
 		<form
 			onSubmit={handleFormSubmit}
-			className='centered-flex rounded-xl shadow-md flex-col w-64 bg-white p-6 space-y-6'
+			className="centered-flex rounded-xl shadow-md flex-col w-64 bg-white p-6 space-y-6"
 		>
-			<h1 className='text-2xl font-bold'>Edit Expense</h1>
+			<h1 className="text-2xl font-bold">Edit Expense</h1>
 			<input
-				type='text'
-				name='description'
+				type="text"
+				name="description"
 				value={expenseState.description}
 				onChange={handleInputChange}
-				placeholder='Description'
-				className='input-field w-full'
+				placeholder="Description"
+				className="input-field w-full"
 			></input>
 			<input
-				type='number'
-				name='amount'
+				type="number"
+				name="amount"
 				value={expenseState.amount}
 				onChange={handleInputChange}
-				placeholder='Amount'
-				className='input-field w-full'
+				placeholder="Amount"
+				className="input-field w-full"
 			></input>
 			<SelectCategory
 				categories={categories}
@@ -124,7 +159,7 @@ export default function EditExpenseForm(props: Props) {
 				onChangeFunction={handleInputChange}
 			/>
 			<DatePicker value={selectedDate} onChange={handleDateChange} />
-			<button type='submit' className='big-btn bg-myYellow'>
+			<button type="submit" className="big-btn bg-myYellow">
 				Edit
 			</button>
 		</form>

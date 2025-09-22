@@ -44,3 +44,27 @@ export async function getAllCategories(): Promise<StringCategory[]> {
 		throw new Error('Get all categories operation failed');
 	}
 }
+
+/**
+ * Gets a sinlge category by id from the db and cleans it to a string value representation
+ * @param categoryId The id of the category to fetch from the db
+ * @returns A promise of the categroy matching the given category id with string values
+ */
+export async function getCategoryById(
+	categoryId: string
+): Promise<StringCategory> {
+	try {
+		// Connects, finds, cleans, and returns the single category if found
+		await connectDB();
+		const raw: DatabaseCategory | null = await Category.findById(categoryId);
+
+		if (raw) {
+			return cleanCategory(raw);
+		} else {
+			throw new Error(`No category with this id exists (${categoryId})`);
+		}
+	} catch (error) {
+		console.error('Error message: ', error);
+		throw new Error('Get category by Id operation failed');
+	}
+}

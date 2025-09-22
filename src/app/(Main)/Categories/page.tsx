@@ -129,18 +129,18 @@ export default function page() {
 	}
 
 	return (
-		<div className='flex flex-col justify-center pt-5 pl-5 pr-5 pb-21 gap-4'>
-			<div className='flex justify-between'>
+		<div className="flex flex-col justify-center pt-5 pl-5 pr-5 pb-21 gap-4">
+			<div className="flex justify-between">
 				<ExpenseIncomeButton
 					showExpense={showExpense}
 					handleShowExpense={handleShowExpense}
 					handleShowIncome={handleShowIncome}
 				/>
 				<div>
-					<button className='small-btn bg-white'>Add</button>
+					<button className="small-btn bg-white">Add</button>
 				</div>
 			</div>
-			<div className='block centered-flex flex-col gap-4 bg-white p-4'>
+			<div className="block centered-flex flex-col gap-4 bg-white p-4">
 				<DonutChart
 					data={displayCategories.map(
 						(category: StringExpensesGroupedByCategories) => {
@@ -150,8 +150,8 @@ export default function page() {
 							};
 						}
 					)}
-					category='name'
-					value='total'
+					category="name"
+					value="total"
 					// This error occurs because colors : "colour" | "another colour" | "another colour" and so on
 					// But because we're passing a string[], typescript is scared that this string can be any string literal not in the colors type
 					// But since the user is forced to only select colours within the AvailableChartColour we can ignore this error
@@ -166,7 +166,7 @@ export default function page() {
 				/>
 				<DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
 			</div>
-			<div className='flex flex-col gap-4'>{categoryCards}</div>
+			<div className="flex flex-col gap-4">{categoryCards}</div>
 		</div>
 	);
 }

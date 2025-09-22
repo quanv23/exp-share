@@ -67,5 +67,6 @@ export default async function insertDummyData(): Promise<void> {
 			category: new mongoose.Types.ObjectId('684f8018d4fc9b7091981426'),
 		},
 	];
+	await Expense.deleteMany({});
 	await Expense.insertMany(expenses);
 }

@@ -19,23 +19,10 @@ export interface Props {
 	 * Expense passed to the card to display
 	 */
 	expense: StringExpense;
-	/**
-	 * List of all categories from the db to be passed down to the edit form
-	 */
-	categories: StringCategory[];
-	/**
-	 * Function that edits an expense from the db to be passed down to the edit form
-	 */
-	editExpenseFunction: (newExpense: UserInputExpense) => Promise<void>;
-	/**
-	 * Function that deletes an expense from the db to be passed down to delete form
-	 */
-	deleteExpenseFunction: (id: string) => Promise<void>;
 }
 
 export default function ExpenseCard(props: Props) {
-	const { expense, categories, editExpenseFunction, deleteExpenseFunction } =
-		props;
+	const { expense } = props;
 
 	// State that determines whether to display the modals or not
 	const [toggleModal, setToggleModal] = useState<Boolean>(false);
@@ -63,26 +50,25 @@ export default function ExpenseCard(props: Props) {
 		<>
 			{toggleModal && (
 				<Modal isOpen={toggleModal} onClose={handleModalClick}>
-					<div className='flex flex-col gap-4'>
+					<div className="flex flex-col gap-4">
 						<EditExpenseForm
 							expense={expense}
-							categories={categories}
-							editExpenseFunction={editExpenseFunction}
+							handleModalClick={handleModalClick}
 						/>
 						<DeleteExpenseForm
 							id={expense.id}
-							deleteExpenseFunction={deleteExpenseFunction}
+							handleModalClick={handleModalClick}
 						/>
 					</div>
 				</Modal>
 			)}
 			<div
-				className='rounded-xl shadow-md flex justify-between items-center bg-white px-6 py-4 hover:bg-myLightGray'
+				className="rounded-xl shadow-md flex justify-between items-center bg-white px-6 py-4 hover:bg-myLightGray"
 				onClick={handleModalClick}
 			>
 				<div>
 					<p>{expense.description}</p>
-					<p className='text-xs text-myDarkGray'>{expense.date}</p>
+					<p className="text-xs text-myDarkGray">{expense.date}</p>
 				</div>
 				<div className={`${amountStyles}`}>
 					${expense.amount.replace('-', '')}
