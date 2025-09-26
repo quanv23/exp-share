@@ -21,23 +21,6 @@ export async function GET(): Promise<Response> {
 	}
 }
 
-// // Gets all expenses grouped by category
-// export async function GET(req: NextRequest): Promise<Response> {
-// 	try {
-// 		const { searchParams } = new URL(req.url);
-
-// 		// Gets the search parameters to pass to the query
-// 		const from: string | null = searchParams.get('from');
-// 		const to: string | null = searchParams.get('to');
-// 		const isExpense: string | null = searchParams.get('isExpense');
-
-// 		const expenses = await getExpensesByCategory(from, to, isExpense);
-// 		return NextResponse.json(expenses);
-// 	} catch (error) {
-// 		return NextResponse.json({}, { status: 400 });
-// 	}
-// }
-
 // Deletes one expense by id
 export async function DELETE(req: NextRequest): Promise<Response> {
 	try {

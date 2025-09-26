@@ -148,36 +148,14 @@ function cleanDate(dateString: string): Date {
 }
 
 /**
- * Formats the inputted amount to #.##.
+ * Formats the inputted amount to #.## so only two decimal places with no leading 0
  * For consistency in displaying the values so they're stored in the same format
  * @param amount The expense amount to be verified
  * @returns A string in #.## form
  */
 function formatInputtedAmount(amount: string): string {
-	// Checks if the amount is not a number
-	if (amount === '' || amount === '-' || amount === '--') {
-		return '0.00';
-	}
-
-	// Check for leading negative
-	const isNegative: Boolean = amount.startsWith('-');
-	if (isNegative) {
-		amount = amount.slice(1); // Removes the negative sign
-	}
-
-	let [left, right = ''] = amount.split('.');
-
-	// Remove leading zeros on the left, but keep 0 if empty
-	left = left.replace(/^0+/, '') || '0';
-
-	// Truncate or pad right side to exactly two digits
-	if (right.length > 2) {
-		right = right.slice(0, 2);
-	} else {
-		right = right.padEnd(2, '0');
-	}
-
-	return `${isNegative ? '-' : ''}${left}.${right}`;
+	const num: number = parseFloat(amount);
+	return (Math.round(num * 100) / 100).toString();
 }
 
 /**
@@ -198,7 +176,7 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
 }
 
 /**
- * Gets all expenses from the db grouped by their categories
+ * Gets expenses from the db grouped by their categories and is able to be filtered by date, and whether the category is neg/pos
  * @from A string in ISO date format that filters all expenses to be greater than this date
  * @to A string in ISO date format that filters all expenses to be less than this date
  * @isExpense A string equal to true/false indicating whether to filter the groups by expense/income
@@ -224,6 +202,7 @@ export async function getExpensesByCategory(
 		// Groups expenses by categories
 		const expenses: ExpensesGroupedByCategories[] = await Expense.aggregate([
 			{
+				// Filters by date range first
 				$match: dataRangeMatch,
 			},
 			{
@@ -243,7 +222,7 @@ export async function getExpensesByCategory(
 					: {},
 			},
 			{
-				// Groups expenses, and calculates the sum and count
+				// Groups expenses by category, and calculates the sum and count
 				$group: {
 					_id: {
 						id: '$categoryInfo._id',
@@ -257,6 +236,7 @@ export async function getExpensesByCategory(
 			},
 			{
 				// Filters the grouped categories by expense/income
+				// Must come after the grouping because we want to filter whether the category is pos/neg, not the expenses
 				$match: {
 					total: isExpense === 'true' ? { $lt: 0 } : { $gt: 0 },
 				},

@@ -25,7 +25,7 @@ export default function ExpenseIncomeButton(props: Prop) {
 	const { showExpense, handleShowExpense, handleShowIncome } = props;
 
 	return (
-		<div className='flex bg-white rounded-3xl shadow-md'>
+		<div className="flex bg-white rounded-3xl shadow-md">
 			<button
 				className={`min-w-[100px] h-[30px] px-6 rounded-3xl text-xs ${
 					showExpense ? 'bg-myGreen text-white' : 'bg-white'

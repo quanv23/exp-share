@@ -55,7 +55,7 @@ export default function EditExpenseForm(props: Props) {
 		new Date(expense.date)
 	);
 
-	// Fetches categories from the db when page is first rendered
+	// Fetches categories from the db for the dropdown when page is first rendered
 	useEffect(() => {
 		async function fetchCategories(): Promise<void> {
 			const categories = await fetch('/api/categories');

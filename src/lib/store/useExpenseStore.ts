@@ -1,18 +1,24 @@
 /**
- * Module that contains the global store state from Zustand
+ * Module that contains the global store state from Zustand for displaying expenses on the expenses page
+ * Allows for persistent data that can be updated anywhere
  * @module
  */
 import { create } from 'zustand';
 import { StringExpense } from '../db/expenses';
 
 interface ExpenseState {
-	error: boolean;
+	/**
+	 * List of all expenses from the db
+	 */
 	expenses: StringExpense[];
+	/**
+	 * Async function that fetches all expenses from the db
+	 */
 	fetchExpenses: () => Promise<void>;
 }
 
+// Creates expense store for displaying expenses that can be refreshed anywhere
 export const useExpenseStore = create<ExpenseState>((set) => ({
-	error: false,
 	expenses: [],
 	fetchExpenses: async () => {
 		try {
@@ -24,7 +30,7 @@ export const useExpenseStore = create<ExpenseState>((set) => ({
 			const data: StringExpense[] = await expenses.json();
 			set({ expenses: data });
 		} catch (error) {
-			set({ error: true });
+			throw new Error('Failed to fetch expenses in store');
 		}
 	},
 }));
