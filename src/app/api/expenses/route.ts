@@ -3,15 +3,12 @@
  * @module
  */
 
-import {
-	getExpensesByCategory,
-	deleteExpense,
-	editExpense,
-	getAllExpenses,
-} from '@/lib/db/expenses';
+import { deleteExpense, editExpense, getAllExpenses } from '@/lib/db/expenses';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Gets all expenses
+/**
+ * Gets all expenses
+ */
 export async function GET(): Promise<Response> {
 	try {
 		const res = await getAllExpenses();
@@ -21,7 +18,9 @@ export async function GET(): Promise<Response> {
 	}
 }
 
-// Deletes one expense by id
+/**
+ * Deletes one expense by id
+ */
 export async function DELETE(req: NextRequest): Promise<Response> {
 	try {
 		const { id } = await req.json();
@@ -32,7 +31,9 @@ export async function DELETE(req: NextRequest): Promise<Response> {
 	}
 }
 
-// Edits on expense by id
+/**
+ * Edits on expense by id
+ */
 export async function PATCH(req: NextRequest): Promise<Response> {
 	try {
 		const { newExpense } = await req.json();

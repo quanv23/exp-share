@@ -51,35 +51,11 @@ export interface StringExpense {
 }
 
 /**
- * Represents a list of expenses grouped by category
- */
-export interface ExpensesGroupedByCategories {
-	_id: mongoose.Types.ObjectId;
-	name: string;
-	colour: string;
-	total: mongoose.Types.Decimal128;
-	count: number;
-	expenses: PopulatedDatabaseExpense[];
-}
-
-/**
- * Represents a list of expenses grouped by category, but populated and with all fields as strings
- */
-export interface StringExpensesGroupedByCategories {
-	id: string;
-	name: string;
-	colour: string;
-	total: string;
-	count: string;
-	expenses: StringExpense[];
-}
-
-/**
  * Converts a populated database expense into a usable string value representation
  * @param expense A database representation of an expense
  * @returns A string value representation of the given expense
  */
-function cleanExpense(expense: PopulatedDatabaseExpense): StringExpense {
+export function cleanExpense(expense: PopulatedDatabaseExpense): StringExpense {
 	return {
 		id: expense._id.toString(),
 		description: expense.description,
@@ -89,41 +65,12 @@ function cleanExpense(expense: PopulatedDatabaseExpense): StringExpense {
 			name: expense.category.name,
 			colour: expense.category.colour,
 		},
-		date: new Date(expense.createdAt).toLocaleDateString(),
+		date: new Date(expense.createdAt).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+		}),
 	};
-}
-
-/**
- * Converts expenses grouped by categories into a usable string value representation
- * @param expensesByCategory A list of expenses grouped by category in their db representation
- * @returns A string value representation of the entire list of expenses
- */
-function cleanExpenseByCategory(
-	expensesByCategory: ExpensesGroupedByCategories[]
-): StringExpensesGroupedByCategories[] {
-	const result: StringExpensesGroupedByCategories[] = [];
-
-	// Converts all grouped expenses to string representation
-	expensesByCategory.forEach((categoryGroup: ExpensesGroupedByCategories) => {
-		// Converts all expenses in the current group to a string representation
-		const stringExpenses: StringExpense[] = categoryGroup.expenses.map(
-			(expense) => cleanExpense(expense)
-		);
-
-		const stringCategoryGroup: StringExpensesGroupedByCategories = {
-			id: categoryGroup._id.toString(),
-			name: categoryGroup.name,
-			colour: categoryGroup.colour,
-			total: categoryGroup.total.toString(),
-			count: categoryGroup.count.toString(),
-			expenses: stringExpenses,
-		};
-
-		// Adds the converted group to the return list
-		result.push(stringCategoryGroup);
-	});
-
-	return result;
 }
 
 /**
@@ -172,92 +119,6 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
 	} catch (error) {
 		console.error('Error message: ', error);
 		throw new Error('Get all expeneses operation failed');
-	}
-}
-
-/**
- * Gets expenses from the db grouped by their categories and is able to be filtered by date, and whether the category is neg/pos
- * @from A string in ISO date format that filters all expenses to be greater than this date
- * @to A string in ISO date format that filters all expenses to be less than this date
- * @isExpense A string equal to true/false indicating whether to filter the groups by expense/income
- * @returns A promise of a list of all expenses grouped by their categories with all fields converted to string
- */
-export async function getExpensesByCategory(
-	from: string | null,
-	to: string | null,
-	isExpense: string | null,
-	categoryId: string | null = null
-): Promise<StringExpensesGroupedByCategories[]> {
-	// Generates date range filter for the query depending if from and to are valid date strings
-	const dataRangeMatch: any = {};
-	if (from && to && from !== 'undefined' && to !== 'undefined') {
-		dataRangeMatch.createdAt = {};
-		if (from) dataRangeMatch.createdAt.$gte = new Date(from);
-		if (to) dataRangeMatch.createdAt.$lte = new Date(to);
-	}
-
-	try {
-		await connectDB();
-
-		// Groups expenses by categories
-		const expenses: ExpensesGroupedByCategories[] = await Expense.aggregate([
-			{
-				// Filters by date range first
-				$match: dataRangeMatch,
-			},
-			{
-				// Looks up the categories since they're referenced by ObjectId in Expense schema
-				$lookup: {
-					from: 'categories',
-					localField: 'category',
-					foreignField: '_id',
-					as: 'categoryInfo',
-				},
-			},
-			{ $unwind: '$categoryInfo' },
-			{
-				// If the optional category id is given, only gets that category's data
-				$match: categoryId
-					? { 'categoryInfo._id': new mongoose.Types.ObjectId(categoryId) }
-					: {},
-			},
-			{
-				// Groups expenses by category, and calculates the sum and count
-				$group: {
-					_id: {
-						id: '$categoryInfo._id',
-						name: '$categoryInfo.name',
-						colour: '$categoryInfo.colour',
-					},
-					total: { $sum: '$amount' },
-					count: { $sum: 1 },
-					expenses: { $push: '$$ROOT' },
-				},
-			},
-			{
-				// Filters the grouped categories by expense/income
-				// Must come after the grouping because we want to filter whether the category is pos/neg, not the expenses
-				$match: {
-					total: isExpense === 'true' ? { $lt: 0 } : { $gt: 0 },
-				},
-			},
-			{
-				// Formats the return object to match the type
-				$project: {
-					_id: '$_id.id',
-					name: '$_id.name',
-					colour: '$_id.colour',
-					total: 1,
-					count: 1,
-					expenses: 1,
-				},
-			},
-		]);
-
-		return cleanExpenseByCategory(expenses);
-	} catch (error) {
-		console.error('Error message:', error);
-		throw new Error('Get all expenses by category operation failed');
 	}
 }
 

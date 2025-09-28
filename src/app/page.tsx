@@ -18,20 +18,20 @@ export default async function page() {
 	const categories: StringCategory[] = await getAllCategories();
 
 	return (
-		<div className='centered-flex block flex-col space-y-4 w-screen h-screen p-5'>
+		<div className="centered-flex block flex-col space-y-4 w-screen h-screen p-5">
 			<AddExpenseForm categories={categories} addExpenseFunction={addExpense} />
-			<div className='centered-flex block w-full h-16 p-6 bg-white gap-10'>
+			<div className="centered-flex block w-full h-16 p-6 bg-white gap-10">
 				<Link href={'/'}>
 					<RiAddCircleFill />
 				</Link>
 				<Link href={'/Dashboard'}>
-					<RiBarChart2Fill className='text-myDarkGray' />
+					<RiBarChart2Fill className="text-myDarkGray" />
 				</Link>
 				<Link href={'/Categories'}>
-					<RiPriceTag3Fill className='text-myDarkGray' />
+					<RiPriceTag3Fill className="text-myDarkGray" />
 				</Link>
 				<Link href={'/Expenses'}>
-					<RiMoneyDollarCircleFill className='text-myDarkGray' />
+					<RiMoneyDollarCircleFill className="text-myDarkGray" />
 				</Link>
 			</div>
 		</div>

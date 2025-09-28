@@ -3,11 +3,11 @@
  * @module
  */
 
-import { getExpensesByCategory } from '@/lib/db/expenses';
+import { getCategoriesWithExpenses } from '@/lib/db/categories';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Get all expenses grouped by category and filtered by the given parameters
-export async function GET(req: NextRequest): Promise<Response> {
+// Get categories joined with their expenses
+export async function GET(req: NextRequest) {
 	try {
 		// Gets the search parameters to pass to the query
 		const { searchParams } = new URL(req.url);
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest): Promise<Response> {
 		const to: string | null = searchParams.get('to');
 		const isExpense: string | null = searchParams.get('isExpense');
 
-		const expenses = await getExpensesByCategory(from, to, isExpense);
+		const expenses = await getCategoriesWithExpenses(isExpense, from, to);
 		return NextResponse.json(expenses, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({}, { status: 400 });

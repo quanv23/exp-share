@@ -15,7 +15,7 @@ interface ExpenseInput {
 
 export default async function insertDummyData(): Promise<void> {
 	await connectDB();
-	const expenses: ExpenseInput[] = [
+	const expenses = [
 		{
 			description: 'Groceries at Walmart',
 			amount: mongoose.Types.Decimal128.fromString('76.49'),

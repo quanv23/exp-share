@@ -5,14 +5,17 @@
  */
 
 import { create } from 'zustand';
-import { StringExpensesGroupedByCategories } from '../db/expenses';
+import {
+	CategoryWithExpenses,
+	StringCategoryWithExpenses,
+} from '../db/categories';
 import { stringFloatToFloat } from '../globalFunctions';
 
 interface GroupedExpenseState {
 	/**
 	 * All the expenses grouped by category that have passed the filters
 	 */
-	groupedExpenses: StringExpensesGroupedByCategories[];
+	groupedExpenses: StringCategoryWithExpenses[];
 	/**
 	 * The absolute total amount of all the grouped expenses
 	 */
@@ -28,9 +31,7 @@ interface GroupedExpenseState {
 	/**
 	 * Gets one category group by it's id from the store. Should only be called after fetchGroupedExpenses or else the state won't be populated
 	 */
-	getGroupByCategoryId: (
-		categoryId: string
-	) => StringExpensesGroupedByCategories;
+	getGroupByCategoryId: (categoryId: string) => StringCategoryWithExpenses;
 }
 
 // Create grouped expense store
@@ -46,7 +47,7 @@ export const useGroupedExpenseStore = create<GroupedExpenseState>(
 			try {
 				// Attempts to fetch data from db with the given search parameters
 				const res = await fetch(
-					`/api/expenses/grouped/?isExpense=${isExpense}&from=${from?.toISOString()}&to=${to?.toISOString()}`
+					`/api/categories/grouped/?isExpense=${isExpense}&from=${from?.toISOString()}&to=${to?.toISOString()}`
 				);
 
 				if (!res.ok) {
@@ -54,11 +55,13 @@ export const useGroupedExpenseStore = create<GroupedExpenseState>(
 				}
 
 				// Parses the data, calculates the total amount and sets it to the state
-				const data: StringExpensesGroupedByCategories[] = await res.json();
+				const data: StringCategoryWithExpenses[] = await res.json();
 				const total: number = data.reduce(
 					(acc, category) => acc + stringFloatToFloat(category.total),
 					0
 				);
+				// Sorts the categories in alphabetical order or else it just randomizes every reload
+				data.sort((a, b) => a.name.localeCompare(b.name));
 				set({ groupedExpenses: data, totalAmount: total });
 			} catch (error) {
 				throw new Error('Failed to fetch grouped expenses in store');
@@ -66,9 +69,9 @@ export const useGroupedExpenseStore = create<GroupedExpenseState>(
 		},
 		getGroupByCategoryId: (categoryId: string) => {
 			// Gets the category group by filtering the current grouped expenses in the store
-			const categoryGroup: StringExpensesGroupedByCategories[] =
+			const categoryGroup: StringCategoryWithExpenses[] =
 				get().groupedExpenses.filter(
-					(group: StringExpensesGroupedByCategories) => group.id === categoryId
+					(group: StringCategoryWithExpenses) => group.id === categoryId
 				);
 
 			// Returns the group as long as something is found

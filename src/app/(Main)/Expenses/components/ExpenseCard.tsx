@@ -5,8 +5,7 @@
 'use client';
 
 import Modal from '@/app/components/Modal';
-import { StringCategory } from '@/lib/db/categories';
-import { StringExpense, UserInputExpense } from '@/lib/db/expenses';
+import { StringExpense } from '@/lib/db/expenses';
 import { useState, useEffect } from 'react';
 import EditExpenseForm from './EditExpenseForm';
 import DeleteExpenseForm from './DeleteExpenseForm';
