@@ -102,7 +102,7 @@ function cleanDate(dateString: string): Date {
  */
 function formatInputtedAmount(amount: string): string {
 	const num: number = parseFloat(amount);
-	return (Math.round(num * 100) / 100).toString();
+	return num.toFixed(2);
 }
 
 /**
@@ -120,6 +120,50 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
 		console.error('Error message: ', error);
 		throw new Error('Get all expeneses operation failed');
 	}
+}
+
+/**
+ * Gets all expenses that belong to a certain category and are within a date range
+ * @returns A promise of a list of expenses that pass the conditions
+ */
+export async function getFilteredExpenses(
+	categoryId: string | null,
+	from: string | null,
+	to: string | null
+): Promise<StringExpense[]> {
+	// Dynamically creates expenses filter depending if a date range is given
+	const expenseFilter: any = {
+		category: new mongoose.Types.ObjectId(categoryId!),
+	};
+	if (from && to && from !== 'undefined' && to !== 'undefined') {
+		expenseFilter.createdAt = {
+			$gte: new Date(from),
+			$lte: new Date(to),
+		};
+	}
+
+	// Fetches the expenses that match the filter
+	const expeneses: PopulatedDatabaseExpense[] = await Expense.aggregate([
+		{
+			$match: expenseFilter,
+		},
+		{
+			// Populates the category field
+			$lookup: {
+				from: 'categories',
+				localField: 'category',
+				foreignField: '_id',
+				as: 'categoryInfo',
+			},
+		},
+		{
+			// Flattens the array
+			$unwind: '$categoryInfo',
+		},
+	]);
+
+	// Returns the converted expenses
+	return expeneses.map((expense) => cleanExpense(expense));
 }
 
 /**

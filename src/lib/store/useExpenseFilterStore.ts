@@ -18,6 +18,10 @@ interface FilterState {
 	 */
 	dateRange: DateRange | undefined;
 	/**
+	 * Filters expenses by category Id
+	 */
+	categoryId: string;
+	/**
 	 * Set function for isExpense
 	 */
 	setIsExpense: (newValue: boolean) => void;
@@ -25,13 +29,21 @@ interface FilterState {
 	 * Set function for dateRange
 	 */
 	setDateRange: (newDateRange: DateRange | undefined) => void;
+	/**
+	 * Set function for CategoryId
+	 */
+	setCategoryId: (newCategoryId: string) => void;
 }
 
 // Creates filter store
-export const useGroupedExpenseFilterStore = create<FilterState>((set) => ({
+export const useExpenseFilterStore = create<FilterState>((set) => ({
 	isExpense: true,
 	dateRange: undefined,
-	setIsExpense: (newValue: boolean) => set({ isExpense: newValue }),
+	categoryId: '',
+	setIsExpense: (newValue: boolean) =>
+		set((state) => ({ isExpense: newValue })),
 	setDateRange: (newDateRange: DateRange | undefined) =>
-		set({ dateRange: newDateRange }),
+		set((state) => ({ dateRange: newDateRange })),
+	setCategoryId: (newCategoryId: string) =>
+		set((state) => ({ categoryId: newCategoryId })),
 }));

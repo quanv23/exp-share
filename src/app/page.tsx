@@ -13,6 +13,7 @@ import Link from 'next/link';
 import AddExpenseForm from './components/AddExpenseForm';
 import { getAllCategories, StringCategory } from '@/lib/db/categories';
 import { addExpense } from '@/lib/db/expenses';
+import insertDummyData from '@/lib/db/helper/script';
 
 export default async function page() {
 	const categories: StringCategory[] = await getAllCategories();

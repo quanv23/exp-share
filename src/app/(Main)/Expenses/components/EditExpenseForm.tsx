@@ -9,6 +9,7 @@ import { StringCategory } from '@/lib/db/categories';
 import { StringExpense, UserInputExpense } from '@/lib/db/expenses';
 import { DatePicker } from '@/tremorComponents/DatePicker';
 import { useExpenseStore } from '@/lib/store/useExpenseStore';
+import { useExpenseFilterStore } from '@/lib/store/useExpenseFilterStore';
 import SelectCategory from '@/app/components/SelectCategory';
 
 /**
@@ -30,11 +31,22 @@ export interface Props {
 	 * Callback function to close the modal after edit is made
 	 */
 	handleModalClick: () => void;
+	/**
+	 * Flag the determines if fetched expenses are filtered or not
+	 */
+	filterExpenses: boolean;
 }
 
 export default function EditExpenseForm(props: Props) {
-	const { expense, handleModalClick } = props;
-	const { fetchExpenses } = useExpenseStore();
+	const { expense, handleModalClick, filterExpenses } = props;
+
+	// Gets global store for refetching expenses
+	const fetchExpenses = useExpenseStore((state) => state.fetchExpenses);
+	const fetchFilteredExpenses = useExpenseStore(
+		(state) => state.fetchFilteredExpenses
+	);
+	const dateRange = useExpenseFilterStore((state) => state.dateRange);
+	const categoryId = useExpenseFilterStore((state) => state.categoryId);
 
 	// State that contains the categories
 	const [categories, setCategories] = useState<StringCategory[]>([]);
@@ -125,7 +137,11 @@ export default function EditExpenseForm(props: Props) {
 			}
 
 			// Refetches expenses to refresh store
-			fetchExpenses();
+			if (filterExpenses) {
+				fetchFilteredExpenses(categoryId, dateRange?.from, dateRange?.to);
+			} else {
+				fetchExpenses();
+			}
 
 			// Closes modal
 			handleModalClick();

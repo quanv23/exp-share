@@ -22,7 +22,13 @@ export default function page() {
 	// Creates the cards for displaying each expense
 	const expenseCards: React.ReactNode[] = expenses.map(
 		(expense: StringExpense) => {
-			return <ExpenseCard key={expense.id} expense={expense} />;
+			return (
+				<ExpenseCard
+					key={expense.id}
+					expense={expense}
+					filterExpenses={false}
+				/>
+			);
 		}
 	);
 

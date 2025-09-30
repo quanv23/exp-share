@@ -18,10 +18,14 @@ export interface Props {
 	 * Expense passed to the card to display
 	 */
 	expense: StringExpense;
+	/**
+	 * Flag that determines whether the fetched expenses are filtered or not
+	 */
+	filterExpenses: boolean;
 }
 
 export default function ExpenseCard(props: Props) {
-	const { expense } = props;
+	const { expense, filterExpenses } = props;
 
 	// State that determines whether to display the modals or not
 	const [toggleModal, setToggleModal] = useState<Boolean>(false);
@@ -53,10 +57,12 @@ export default function ExpenseCard(props: Props) {
 						<EditExpenseForm
 							expense={expense}
 							handleModalClick={handleModalClick}
+							filterExpenses={filterExpenses}
 						/>
 						<DeleteExpenseForm
 							id={expense.id}
 							handleModalClick={handleModalClick}
+							filterExpenses={filterExpenses}
 						/>
 					</div>
 				</Modal>

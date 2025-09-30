@@ -4,6 +4,7 @@
  */
 'use client';
 
+import { useExpenseFilterStore } from '@/lib/store/useExpenseFilterStore';
 import { useExpenseStore } from '@/lib/store/useExpenseStore';
 import { useState } from 'react';
 
@@ -19,11 +20,22 @@ export interface Props {
 	 * Callback function that toggles the modal to close after deletion is confirmed
 	 */
 	handleModalClick: () => void;
+	/**
+	 * Flag that determines if fetched expenses are filtered or not
+	 */
+	filterExpenses: boolean;
 }
 
 export default function DeleteExpenseForm(props: Props) {
-	const { id, handleModalClick } = props;
-	const { fetchExpenses } = useExpenseStore();
+	const { id, handleModalClick, filterExpenses } = props;
+
+	// Gets global store for refetching expenses
+	const fetchExpenses = useExpenseStore((state) => state.fetchExpenses);
+	const fetchFilteredExpenses = useExpenseStore(
+		(state) => state.fetchFilteredExpenses
+	);
+	const dateRange = useExpenseFilterStore((state) => state.dateRange);
+	const categoryId = useExpenseFilterStore((state) => state.categoryId);
 
 	// State that manages whether the delete button has been clicked and should show the confirmation buttons
 	const [toggleConfirmation, setToggleConfirmation] = useState<boolean>(false);
@@ -60,7 +72,13 @@ export default function DeleteExpenseForm(props: Props) {
 			}
 
 			// Refetches expenses to refresh the store
-			fetchExpenses();
+			if (filterExpenses) {
+				console.log('filters');
+				fetchFilteredExpenses(categoryId, dateRange?.from, dateRange?.to);
+			} else {
+				console.log('filtered');
+				fetchExpenses();
+			}
 
 			// Closes modal
 			handleModalClick();

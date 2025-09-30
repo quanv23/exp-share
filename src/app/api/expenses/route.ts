@@ -3,15 +3,35 @@
  * @module
  */
 
-import { deleteExpense, editExpense, getAllExpenses } from '@/lib/db/expenses';
+import {
+	deleteExpense,
+	editExpense,
+	getAllExpenses,
+	getFilteredExpenses,
+	StringExpense,
+} from '@/lib/db/expenses';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * Gets all expenses
  */
-export async function GET(): Promise<Response> {
+export async function GET(req: NextRequest): Promise<Response> {
 	try {
-		const res = await getAllExpenses();
+		// Gets the search parameters to pass to the query
+		const { searchParams } = new URL(req.url);
+		let res: StringExpense[] = [];
+
+		// If no search parameters are given get all expenses
+		if (!searchParams.toString()) {
+			res = await getAllExpenses();
+		} else {
+			// Otherwise pull out the parameters and filter the expenses
+			const categoryId: string | null = searchParams.get('categoryId');
+			const from: string | null = searchParams.get('from');
+			const to: string | null = searchParams.get('to');
+			res = await getFilteredExpenses(categoryId, from, to);
+		}
+
 		return NextResponse.json(res, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({}, { status: 400 });

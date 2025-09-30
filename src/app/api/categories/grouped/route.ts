@@ -3,7 +3,10 @@
  * @module
  */
 
-import { getCategoriesWithExpenses } from '@/lib/db/categories';
+import {
+	getCategoriesWithExpenses,
+	StringCategoryWithExpenses,
+} from '@/lib/db/categories';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Get categories joined with their expenses
@@ -15,7 +18,8 @@ export async function GET(req: NextRequest) {
 		const to: string | null = searchParams.get('to');
 		const isExpense: string | null = searchParams.get('isExpense');
 
-		const expenses = await getCategoriesWithExpenses(isExpense, from, to);
+		const expenses: StringCategoryWithExpenses[] =
+			await getCategoriesWithExpenses(isExpense, from, to);
 		return NextResponse.json(expenses, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({}, { status: 400 });

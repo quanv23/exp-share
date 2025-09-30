@@ -12,21 +12,23 @@ import { StringCategoryWithExpenses } from '@/lib/db/categories';
 import { DonutChart } from '@/tremorComponents/DonutChart';
 import { stringFloatToFloat } from '@/lib/globalFunctions';
 import { DateRange } from 'react-day-picker';
-import { useGroupedExpenseFilterStore } from '@/lib/store/useGroupedExpenseFilterStore';
-import { useGroupedExpenseStore } from '@/lib/store/useGroupedExpenseStore';
+import { useExpenseFilterStore } from '@/lib/store/useExpenseFilterStore';
 import CategoryCard from './components/CategoryCard';
 import Link from 'next/link';
 import Modal from '@/app/components/Modal';
 import AddCategoryForm from './components/AddCategoryForm';
+import { useExpenseStore } from '@/lib/store/useExpenseStore';
 
 export default function page() {
 	// The search parameter global store for filtering the grouped expenses store
-	const { isExpense, setIsExpense, dateRange, setDateRange } =
-		useGroupedExpenseFilterStore();
+	const isExpense = useExpenseFilterStore((state) => state.isExpense);
+	const setIsExpense = useExpenseFilterStore((state) => state.setIsExpense);
+	const dateRange = useExpenseFilterStore((state) => state.dateRange);
+	const setDateRange = useExpenseFilterStore((state) => state.setDateRange);
 
 	// The display category store that contains all the grouped expenses and the total amount
 	const { groupedExpenses, totalAmount, fetchGroupedExpenses } =
-		useGroupedExpenseStore();
+		useExpenseStore();
 
 	// State that determines whether to display the modal of not
 	const [toggleModal, setToggleModal] = useState<boolean>(false);
@@ -42,10 +44,6 @@ export default function page() {
 			try {
 				// Gets the expenses, and the total amount
 				fetchGroupedExpenses(isExpense, dateRange?.from, dateRange?.to);
-
-				const res = await fetch(
-					'/api/categories/grouped?isExpense=false&from=undefined&to=undefined'
-				);
 			} catch (error) {
 				console.error('Error message: ', error);
 				throw new Error('Failed to fetch filtered categories');
@@ -111,7 +109,7 @@ export default function page() {
 			{toggleModal && (
 				<Modal isOpen={toggleModal} onClose={handleModalClick}>
 					<div className="centered-flex">
-						<AddCategoryForm handleModalClick={handleModalClick} />
+						<AddCategoryForm />
 					</div>
 				</Modal>
 			)}

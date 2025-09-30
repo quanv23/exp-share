@@ -5,6 +5,8 @@
  */
 import { create } from 'zustand';
 import { StringExpense } from '../db/expenses';
+import { StringCategoryWithExpenses } from '../db/categories';
+import { stringFloatToFloat } from '../globalFunctions';
 
 interface ExpenseState {
 	/**
@@ -12,14 +14,40 @@ interface ExpenseState {
 	 */
 	expenses: StringExpense[];
 	/**
+	 * All the expenses grouped by category that have passed the filters
+	 */
+	groupedExpenses: StringCategoryWithExpenses[];
+	/**
+	 * The absolute total amount of all the grouped expenses
+	 */
+	totalAmount: number;
+	/**
 	 * Async function that fetches all expenses from the db
 	 */
 	fetchExpenses: () => Promise<void>;
+	/**
+	 * Fetches all the expenses and groups them by category using the search parameters from the filter global store
+	 */
+	fetchGroupedExpenses: (
+		isExpense: boolean,
+		from: Date | undefined,
+		to: Date | undefined
+	) => void;
+	/**
+	 * Gets expenses by category id, Should only be called after fetchGroupedExpenses or else the state won't be populated
+	 */
+	fetchFilteredExpenses: (
+		categoryId: string,
+		from: Date | undefined,
+		to: Date | undefined
+	) => void;
 }
 
 // Creates expense store for displaying expenses that can be refreshed anywhere
-export const useExpenseStore = create<ExpenseState>((set) => ({
+export const useExpenseStore = create<ExpenseState>((set, get) => ({
 	expenses: [],
+	groupedExpenses: [],
+	totalAmount: 0,
 	fetchExpenses: async () => {
 		try {
 			// Attempts to fetch all expenses from db
@@ -28,9 +56,60 @@ export const useExpenseStore = create<ExpenseState>((set) => ({
 
 			// Parses and sets the store's data
 			const data: StringExpense[] = await expenses.json();
-			set({ expenses: data });
+			set((state) => ({ expenses: data }));
 		} catch (error) {
 			throw new Error('Failed to fetch expenses in store');
+		}
+	},
+	fetchGroupedExpenses: async (
+		isExpense: boolean,
+		from: Date | undefined,
+		to: Date | undefined
+	) => {
+		try {
+			// Attempts to fetch data from db with the given search parameters
+			const res = await fetch(
+				`/api/categories/grouped/?isExpense=${isExpense}&from=${from?.toISOString()}&to=${to?.toISOString()}`
+			);
+
+			if (!res.ok) throw new Error();
+
+			// Parses the data, calculates the total amount and sets it to the state
+			const data: StringCategoryWithExpenses[] = await res.json();
+			const total: number = data.reduce(
+				(acc, category) => acc + stringFloatToFloat(category.total),
+				0
+			);
+			// Sorts the categories in alphabetical order or else it just randomizes every reload
+			data.sort((a, b) => a.name.localeCompare(b.name));
+			set((state) => ({ groupedExpenses: data, totalAmount: total }));
+		} catch (error) {
+			console.error('Error: ', error);
+			throw new Error('Failed to fetch grouped expenses in store');
+		}
+	},
+	fetchFilteredExpenses: async (
+		categoryId: string,
+		from: Date | undefined,
+		to: Date | undefined
+	) => {
+		try {
+			console.log(categoryId);
+			console.log(from);
+			console.log(to);
+			// Attempts to fetch data from db with the given search parameters
+			const res = await fetch(
+				`/api/expenses/?categoryId=${categoryId}&from=${from?.toISOString()}&to=${to?.toISOString()}`
+			);
+
+			if (!res.ok) throw new Error();
+
+			const data: StringExpense[] = await res.json();
+			console.log(data);
+			set((state) => ({ expenses: data }));
+		} catch (error) {
+			console.error('Error: ', error);
+			throw new Error('Failed to fetch expenses by categoryId in store');
 		}
 	},
 }));

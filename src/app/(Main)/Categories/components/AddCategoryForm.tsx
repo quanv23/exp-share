@@ -6,23 +6,17 @@
 
 import { UserInputCategory } from '@/lib/db/categories';
 import ColourSelector from './ColourSelector';
-import { useGroupedExpenseStore } from '@/lib/store/useGroupedExpenseStore';
-import { useGroupedExpenseFilterStore } from '@/lib/store/useGroupedExpenseFilterStore';
+import { useExpenseFilterStore } from '@/lib/store/useExpenseFilterStore';
 import { useState } from 'react';
+import { useExpenseStore } from '@/lib/store/useExpenseStore';
 
-export interface Props {
-	/**
-	 * Callback function to close the modal after adding a new category
-	 */
-	handleModalClick: () => void;
-}
-
-export default function AddCategoryForm(props: Props) {
-	const { handleModalClick } = props;
-
+export default function AddCategoryForm() {
 	// Uses the grouped expense and filter store to refetch categories after adding a new one
-	const { fetchGroupedExpenses } = useGroupedExpenseStore();
-	const { isExpense, dateRange } = useGroupedExpenseFilterStore();
+	const fetchGroupedExpenses = useExpenseStore(
+		(state) => state.fetchGroupedExpenses
+	);
+	const isExpense = useExpenseFilterStore((state) => state.isExpense);
+	const dateRange = useExpenseFilterStore((state) => state.dateRange);
 
 	const [categoryState, setCategoryState] = useState<UserInputCategory>({
 		name: '',
