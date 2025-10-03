@@ -198,9 +198,7 @@ export async function editExpense(newExpense: UserInputExpense): Promise<void> {
 		const oldExpense = await Expense.findById(newExpense.id!); // forgo typing to allow mongoose to return it's actual document type for .save()
 
 		//  Check that the expense exists
-		if (!oldExpense) {
-			throw new Error('Expense not found');
-		}
+		if (!oldExpense) throw new Error('Expense not found');
 
 		// Updates the old expense's fields and saves it
 		// Doing it likes this allows the schema to enforce it's typing

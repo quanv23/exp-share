@@ -4,7 +4,6 @@
  * @module
  */
 
-import { te } from 'date-fns/locale';
 import {
 	cleanExpense,
 	PopulatedDatabaseExpense,
@@ -115,16 +114,56 @@ export async function getAllCategories(): Promise<StringCategory[]> {
 	}
 }
 
+/**
+ * Gets a sinlge category by id from the db and cleans it to a string value representation
+ * @param categoryId The id of the category to fetch from the db
+ * @returns A promise of the categroy matching the given category id with string values
+ */
+export async function getCategoryById(
+	categoryId: string
+): Promise<StringCategory> {
+	try {
+		// Connects, finds, cleans, and returns the single category if found
+		await connectDB();
+		const raw: DatabaseCategory | null = await Category.findById(categoryId);
+
+		if (raw) {
+			return cleanCategory(raw);
+		} else {
+			throw new Error(`No category with this id exists (${categoryId})`);
+		}
+	} catch (error) {
+		console.error('Error message: ', error);
+		throw new Error('Get category by Id operation failed');
+	}
+}
+
+/**
+ * Gets all categories along with their expenses, and filters the group
+ * @param isExpense filters category groups by whether they have a positive or negative total
+ * @param from filters the expenses from a certain date
+ * @param to filters the expenses to a certain date
+ * @param categoryId filters the categories by id
+ */
 export async function getCategoriesWithExpenses(
 	isExpense: string | null,
 	from: string | null,
-	to: string | null
+	to: string | null,
+	categoryId: string | null = null
 ) {
 	// Dynamically creates expenses filter depending if a date range is given
 	const expenseFilter: any[] = [{ $eq: ['$category', '$$categoryId'] }];
 	if (from && to && from !== 'undefined' && to !== 'undefined') {
 		expenseFilter.push({ $gte: ['$createdAt', new Date(from!)] });
 		expenseFilter.push({ $lte: ['$createdAt', new Date(to!)] });
+	}
+
+	// Dynamically builds category filters if id is given
+	const categoryFilter: any = {
+		total: isExpense === 'true' ? { $lte: 0 } : { $gte: 0 },
+	};
+	if (categoryId) {
+		categoryFilter._id = new mongoose.Types.ObjectId(categoryId);
 	}
 
 	try {
@@ -158,9 +197,7 @@ export async function getCategoriesWithExpenses(
 			{
 				// Filters the grouped categories by expense/income
 				// Must come after the grouping because we want to filter whether the category is pos/neg, not the expenses
-				$match: {
-					total: isExpense === 'true' ? { $lte: 0 } : { $gte: 0 },
-				},
+				$match: categoryFilter,
 			},
 		]);
 		return cleanCategoryWithExpenses(categories);
@@ -180,7 +217,6 @@ export async function addCategory(category: UserInputCategory) {
 	try {
 		// Connects to db, and creates new category
 		await connectDB();
-		console.log(category);
 		await Category.create(category);
 	} catch (error) {
 		console.error('Error message: ', error);
@@ -189,25 +225,42 @@ export async function addCategory(category: UserInputCategory) {
 }
 
 /**
- * Gets a sinlge category by id from the db and cleans it to a string value representation
- * @param categoryId The id of the category to fetch from the db
- * @returns A promise of the categroy matching the given category id with string values
+ * Edits a category by id in the db
+ * @param category The new category data to update
  */
-export async function getCategoryById(
-	categoryId: string
-): Promise<StringCategory> {
-	try {
-		// Connects, finds, cleans, and returns the single category if found
-		await connectDB();
-		const raw: DatabaseCategory | null = await Category.findById(categoryId);
+export async function editCategory(category: UserInputCategory) {
+	'use server';
 
-		if (raw) {
-			return cleanCategory(raw);
-		} else {
-			throw new Error(`No category with this id exists (${categoryId})`);
-		}
+	try {
+		await connectDB();
+
+		// Fetches old category to edit
+		const oldCategory = await Category.findById(category.id);
+		if (!oldCategory) throw new Error();
+
+		// Updates old category fields and saves it to preserve schema typing
+		oldCategory.name = category.name;
+		oldCategory.colour = category.colour;
+		await oldCategory.save();
 	} catch (error) {
-		console.error('Error message: ', error);
-		throw new Error('Get category by Id operation failed');
+		console.error(error);
+		throw new Error('Edit category operation failed');
+	}
+}
+
+/**
+ * Deletes a category by id in the db
+ * @param id The id of the category to be deleted
+ */
+export async function deleteCategory(id: string) {
+	'use server';
+
+	try {
+		// Connects to db and deletes the category
+		await connectDB();
+		await Category.deleteOne({ _id: id });
+	} catch (error) {
+		console.error(error);
+		throw new Error('Delete category operation failed');
 	}
 }

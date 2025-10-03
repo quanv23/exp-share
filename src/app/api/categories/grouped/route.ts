@@ -17,11 +17,13 @@ export async function GET(req: NextRequest) {
 		const from: string | null = searchParams.get('from');
 		const to: string | null = searchParams.get('to');
 		const isExpense: string | null = searchParams.get('isExpense');
+		const categoryId: string | null = searchParams.get('categoryId');
 
 		const expenses: StringCategoryWithExpenses[] =
-			await getCategoriesWithExpenses(isExpense, from, to);
+			await getCategoriesWithExpenses(isExpense, from, to, categoryId);
 		return NextResponse.json(expenses, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return NextResponse.json({}, { status: 400 });
 	}
 }

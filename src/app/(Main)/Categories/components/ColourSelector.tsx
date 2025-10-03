@@ -68,7 +68,7 @@ export default function ColourSelector(props: Props) {
 						type="button"
 						onClick={() => handleColourSelected(colour.name)}
 						className={`w-6 h-6 rounded-full ${colour.value} ${
-							selectedColour === colour.name ? 'border-2' : ''
+							selectedColour === colour.name ? 'border-3' : ''
 						}`}
 					></button>
 				</div>

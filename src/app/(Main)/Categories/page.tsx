@@ -35,8 +35,6 @@ export default function page() {
 
 	// Fetches and refilters the data from the db on mount, and anytime a filter is changed
 	useEffect(() => {
-		console.log('useEffect triggered');
-
 		/**
 		 * Populates the store with expenses grouped by categories from the db, and applies the relevant filters
 		 */

@@ -5,7 +5,11 @@
  */
 import { create } from 'zustand';
 import { StringExpense } from '../db/expenses';
-import { StringCategoryWithExpenses } from '../db/categories';
+import {
+	getCategoryById,
+	StringCategory,
+	StringCategoryWithExpenses,
+} from '../db/categories';
 import { stringFloatToFloat } from '../globalFunctions';
 
 interface ExpenseState {
@@ -18,7 +22,7 @@ interface ExpenseState {
 	 */
 	groupedExpenses: StringCategoryWithExpenses[];
 	/**
-	 * The absolute total amount of all the grouped expenses
+	 * The absolute total amount of all the grouped expenses or one category group
 	 */
 	totalAmount: number;
 	/**
@@ -41,6 +45,15 @@ interface ExpenseState {
 		from: Date | undefined,
 		to: Date | undefined
 	) => void;
+	/**
+	 * Gets a category along with its expenses by its Id
+	 */
+	fetchCategoryGroupById: (
+		isExpense: boolean,
+		from: Date | undefined,
+		to: Date | undefined,
+		categoryId: string
+	) => Promise<StringCategoryWithExpenses>;
 }
 
 // Creates expense store for displaying expenses that can be refreshed anywhere
@@ -58,6 +71,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 			const data: StringExpense[] = await expenses.json();
 			set((state) => ({ expenses: data }));
 		} catch (error) {
+			console.error(error);
 			throw new Error('Failed to fetch expenses in store');
 		}
 	},
@@ -84,19 +98,17 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 			data.sort((a, b) => a.name.localeCompare(b.name));
 			set((state) => ({ groupedExpenses: data, totalAmount: total }));
 		} catch (error) {
-			console.error('Error: ', error);
+			console.error(error);
 			throw new Error('Failed to fetch grouped expenses in store');
 		}
 	},
+	// CURRENTLY IS NOT USED
 	fetchFilteredExpenses: async (
 		categoryId: string,
 		from: Date | undefined,
 		to: Date | undefined
 	) => {
 		try {
-			console.log(categoryId);
-			console.log(from);
-			console.log(to);
 			// Attempts to fetch data from db with the given search parameters
 			const res = await fetch(
 				`/api/expenses/?categoryId=${categoryId}&from=${from?.toISOString()}&to=${to?.toISOString()}`
@@ -104,12 +116,63 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 
 			if (!res.ok) throw new Error();
 
+			// Parses the data, and calculates the total amount
 			const data: StringExpense[] = await res.json();
-			console.log(data);
-			set((state) => ({ expenses: data }));
+			const total: number = data.reduce(
+				(acc, expense) => acc + stringFloatToFloat(expense.amount),
+				0
+			);
+			set((state) => ({ expenses: data, totalAmount: total }));
 		} catch (error) {
-			console.error('Error: ', error);
+			console.error(error);
 			throw new Error('Failed to fetch expenses by categoryId in store');
+		}
+	},
+	fetchCategoryGroupById: async (
+		isExpense: boolean,
+		from: Date | undefined,
+		to: Date | undefined,
+		categoryId: string
+	) => {
+		try {
+			// Attempts to fetch category group
+			let res = await fetch(
+				`/api/categories/grouped/?isExpense=${isExpense}&from=${from?.toISOString()}&to=${to?.toISOString()}&categoryId=${categoryId}`
+			);
+
+			if (!res.ok) throw new Error();
+
+			// Parses the data, calculates the total amount and sets it to the state
+			let data: StringCategoryWithExpenses[] = await res.json();
+
+			// Fail safe if no category group matches the query, at least return the category data
+			if (data.length === 0) {
+				res = await fetch(`/api/categories/?categoryId=${categoryId}`);
+
+				if (!res.ok) throw new Error();
+
+				const categoryData: StringCategory[] = await res.json();
+				data = [
+					{
+						id: categoryData[0].id,
+						name: categoryData[0].name,
+						colour: categoryData[0].colour,
+						expenses: [],
+						total: '0',
+					},
+				];
+			}
+
+			const total: number = data.reduce(
+				(acc, category) => acc + stringFloatToFloat(category.total),
+				0
+			);
+
+			set((state) => ({ expenses: data[0].expenses, totalAmount: total }));
+			return data[0];
+		} catch (error) {
+			console.error(error);
+			throw new Error('Failed to fetch grouped expenses in store');
 		}
 	},
 }));

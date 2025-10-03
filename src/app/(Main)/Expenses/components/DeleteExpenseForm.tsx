@@ -73,10 +73,8 @@ export default function DeleteExpenseForm(props: Props) {
 
 			// Refetches expenses to refresh the store
 			if (filterExpenses) {
-				console.log('filters');
 				fetchFilteredExpenses(categoryId, dateRange?.from, dateRange?.to);
 			} else {
-				console.log('filtered');
 				fetchExpenses();
 			}
 

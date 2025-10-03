@@ -58,7 +58,6 @@ export default function AddCategoryForm() {
 	): Promise<void> {
 		try {
 			event.preventDefault();
-			console.log(categoryState);
 
 			const res = await fetch('/api/categories', {
 				method: 'POST',
