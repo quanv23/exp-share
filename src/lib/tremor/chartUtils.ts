@@ -3,17 +3,17 @@
 export type ColorUtility = 'bg' | 'stroke' | 'fill' | 'text';
 
 export const chartColors = {
+	emerald: {
+		bg: 'bg-[#33ba77]',
+		stroke: 'stroke-[#33ba77]',
+		fill: 'fill-[#33ba77]',
+		text: 'text-[#33ba77]',
+	},
 	blue: {
 		bg: 'bg-blue-500',
 		stroke: 'stroke-blue-500',
 		fill: 'fill-blue-500',
 		text: 'text-blue-500',
-	},
-	emerald: {
-		bg: 'bg-emerald-500',
-		stroke: 'stroke-emerald-500',
-		fill: 'fill-emerald-500',
-		text: 'text-emerald-500',
 	},
 	violet: {
 		bg: 'bg-violet-500',

@@ -79,14 +79,14 @@ export default function page() {
 	}, [toggleModal]);
 
 	/**
-	 * Handles when the option button is toggled to expense and sets the state to expense to make the graph show expense data
+	 * Handles when the option button is toggled and sets the state to expense to make the graph show expense data
 	 */
 	function handleShowExpense(): void {
 		setIsExpense(true);
 	}
 
 	/**
-	 * Handles when the option button is toggled to expense and sets the state to income to make the graph show income data
+	 * Handles when the option button is toggled and sets the state to income to make the graph show income data
 	 */
 	function handleShowIncome(): void {
 		setIsExpense(false);
