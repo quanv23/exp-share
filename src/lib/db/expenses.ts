@@ -8,6 +8,7 @@ import connectDB from './helper/mongoose';
 import { Expense } from './models/Expense';
 import { Category } from './models/Category'; // Must import for .populate to work
 import mongoose from 'mongoose';
+import insertDummyData from './helper/script';
 
 /**
  * Represents an expense from the database that is populated with the category fields
@@ -48,6 +49,11 @@ export interface StringExpense {
 		colour: string;
 	};
 	date: string;
+}
+
+export interface ExpenseGroupedByDate {
+	_id: string;
+	totalAmount: number;
 }
 
 /**
@@ -122,50 +128,107 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
 	}
 }
 
+async function helperQuery(
+	isExpense: string,
+	from: Date,
+	to: Date
+): Promise<ExpenseGroupedByDate[]> {
+	try {
+		// Fetches the expenses that match the filter
+		const expenses = await Expense.aggregate([
+			{
+				$match: {
+					createdAt: { $gte: from, $lte: to },
+					amount: isExpense === 'true' ? { $lte: 0 } : { $gte: 0 },
+				},
+			},
+			{
+				// Truncate to the start of the day so all times on the same date group together
+				$group: {
+					_id: {
+						$dateTrunc: {
+							date: '$createdAt',
+							unit: 'day',
+							timezone: 'America/Toronto', // Must include timezone in order to convert dates to local time before grouping
+						},
+					},
+					totalAmount: { $sum: '$amount' },
+					expenses: { $push: '$$ROOT' },
+				},
+			},
+			{
+				// Sort chronologically
+				$sort: { _id: 1 },
+			},
+		]);
+
+		// Returns the converted expenses
+		return expenses.map((expense: ExpenseGroupedByDate) => ({
+			_id: expense._id,
+			totalAmount: parseFloat(expense.totalAmount.toString()),
+		}));
+	} catch (error) {
+		console.error(error);
+		throw new Error('Get filtered expense operation failed');
+	}
+}
+
 /**
  * Gets all expenses that belong to a certain category and are within a date range
  * @returns A promise of a list of expenses that pass the conditions
  */
-export async function getFilteredExpenses(
-	categoryId: string | null,
-	from: string | null,
-	to: string | null
-): Promise<StringExpense[]> {
-	// Dynamically creates expenses filter depending if a date range is given
-	const expenseFilter: any = {
-		category: new mongoose.Types.ObjectId(categoryId!),
-	};
-	if (from && to && from !== 'undefined' && to !== 'undefined') {
-		expenseFilter.createdAt = {
-			$gte: new Date(from),
-			$lte: new Date(to),
-		};
-	}
+export async function getExpensesGroupedByDate(
+	isExpense: string | null
+): Promise<ExpenseGroupedByDate[][]> {
+	const today = new Date();
 
-	// Fetches the expenses that match the filter
-	const expeneses: PopulatedDatabaseExpense[] = await Expense.aggregate([
-		{
-			$match: expenseFilter,
-		},
-		{
-			// Populates the category field
-			$lookup: {
-				from: 'categories',
-				localField: 'category',
-				foreignField: '_id',
-				as: 'categoryInfo',
-			},
-		},
-		{
-			// Flattens the array
-			$unwind: '$categoryInfo',
-		},
-	]);
+	// Gets the first and last day of today's week
+	const firstDayOfWeek = new Date(today);
+	firstDayOfWeek.setDate(today.getDate() - today.getDay());
 
-	// Returns the converted expenses
-	return expeneses.map((expense) => cleanExpense(expense));
+	const lastDayOfWeek = new Date(today);
+	lastDayOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+
+	// Manually sets the time to catch all dates
+	firstDayOfWeek.setHours(0, 0, 0, 0);
+	lastDayOfWeek.setHours(23, 59, 59, 999);
+
+	const week: ExpenseGroupedByDate[] = await helperQuery(
+		isExpense!,
+		firstDayOfWeek,
+		lastDayOfWeek
+	);
+
+	// Gets the first and last day of today's month
+	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+	const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+	// Must set time of last day to the maximum
+	lastDayOfMonth.setHours(23, 59, 59, 999);
+
+	const month: ExpenseGroupedByDate[] = await helperQuery(
+		isExpense!,
+		firstDayOfMonth,
+		lastDayOfMonth
+	);
+
+	// Gets the first and last day of today's year
+	const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+	const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
+
+	// Must set time of last day to the maximum
+	lastDayOfYear.setHours(23, 59, 59, 999);
+
+	const year: ExpenseGroupedByDate[] = await helperQuery(
+		isExpense!,
+		firstDayOfYear,
+		lastDayOfYear
+	);
+
+	// const month: ExpenseGroupedByDate[] = [];
+	// const year: ExpenseGroupedByDate[] = [];
+	return [week, month, year];
 }
-
 /**
  * Adds an expense into the db
  * @param expense A user inputted expense to be added to the db

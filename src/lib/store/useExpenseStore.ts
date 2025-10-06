@@ -38,14 +38,6 @@ interface ExpenseState {
 		to: Date | undefined
 	) => void;
 	/**
-	 * Gets expenses by category id, Should only be called after fetchGroupedExpenses or else the state won't be populated
-	 */
-	fetchFilteredExpenses: (
-		categoryId: string,
-		from: Date | undefined,
-		to: Date | undefined
-	) => void;
-	/**
 	 * Gets a category along with its expenses by its Id
 	 */
 	fetchCategoryGroupById: (
@@ -100,32 +92,6 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 		} catch (error) {
 			console.error(error);
 			throw new Error('Failed to fetch grouped expenses in store');
-		}
-	},
-	// CURRENTLY IS NOT USED
-	fetchFilteredExpenses: async (
-		categoryId: string,
-		from: Date | undefined,
-		to: Date | undefined
-	) => {
-		try {
-			// Attempts to fetch data from db with the given search parameters
-			const res = await fetch(
-				`/api/expenses/?categoryId=${categoryId}&from=${from?.toISOString()}&to=${to?.toISOString()}`
-			);
-
-			if (!res.ok) throw new Error();
-
-			// Parses the data, and calculates the total amount
-			const data: StringExpense[] = await res.json();
-			const total: number = data.reduce(
-				(acc, expense) => acc + stringFloatToFloat(expense.amount),
-				0
-			);
-			set((state) => ({ expenses: data, totalAmount: total }));
-		} catch (error) {
-			console.error(error);
-			throw new Error('Failed to fetch expenses by categoryId in store');
 		}
 	},
 	fetchCategoryGroupById: async (

@@ -133,7 +133,7 @@ export default function page() {
 						</button>
 					)}
 				</div>
-				<div className="centered-flex flex-col block w-full h-36 bg-myGreen relative">
+				<div className="centered-flex flex-col block w-full h-36 bg-myGreen relative gap-2">
 					<h1 className="text-3xl font-bold text-white">{category.name}</h1>
 					<p className="font-bold text-white">${totalAmount.toFixed(2)}</p>
 					<RiPencilFill
@@ -142,7 +142,9 @@ export default function page() {
 					/>
 				</div>
 				{expenseCards.length === 0 ? (
-					<div className="centered-flex">No expenses to display</div>
+					<div className="centered-flex">
+						No expenses match the filter(s) above
+					</div>
 				) : (
 					<>
 						<div className="flex flex-col gap-2">{expenseCards}</div>

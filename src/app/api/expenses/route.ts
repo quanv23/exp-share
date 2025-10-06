@@ -7,8 +7,7 @@ import {
 	deleteExpense,
 	editExpense,
 	getAllExpenses,
-	getFilteredExpenses,
-	StringExpense,
+	getExpensesGroupedByDate,
 } from '@/lib/db/expenses';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -19,21 +18,20 @@ export async function GET(req: NextRequest): Promise<Response> {
 	try {
 		// Gets the search parameters to pass to the query
 		const { searchParams } = new URL(req.url);
-		let res: StringExpense[] = [];
+		let res = [];
 
 		// If no search parameters are given get all expenses
 		if (!searchParams.toString()) {
 			res = await getAllExpenses();
 		} else {
 			// Otherwise pull out the parameters and filter the expenses
-			const categoryId: string | null = searchParams.get('categoryId');
-			const from: string | null = searchParams.get('from');
-			const to: string | null = searchParams.get('to');
-			res = await getFilteredExpenses(categoryId, from, to);
+			const isExpense: string | null = searchParams.get('isExpense');
+			res = await getExpensesGroupedByDate(isExpense);
 		}
 
 		return NextResponse.json(res, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return NextResponse.json({}, { status: 400 });
 	}
 }

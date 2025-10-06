@@ -42,9 +42,10 @@ export default function EditExpenseForm(props: Props) {
 
 	// Gets global store for refetching expenses
 	const fetchExpenses = useExpenseStore((state) => state.fetchExpenses);
-	const fetchFilteredExpenses = useExpenseStore(
-		(state) => state.fetchFilteredExpenses
+	const fetchCategoryGroupById = useExpenseStore(
+		(state) => state.fetchCategoryGroupById
 	);
+	const isExpense = useExpenseFilterStore((state) => state.isExpense);
 	const dateRange = useExpenseFilterStore((state) => state.dateRange);
 	const categoryId = useExpenseFilterStore((state) => state.categoryId);
 
@@ -138,7 +139,12 @@ export default function EditExpenseForm(props: Props) {
 
 			// Refetches expenses to refresh store
 			if (filterExpenses) {
-				fetchFilteredExpenses(categoryId, dateRange?.from, dateRange?.to);
+				fetchCategoryGroupById(
+					isExpense,
+					dateRange?.from,
+					dateRange?.to,
+					categoryId
+				);
 			} else {
 				fetchExpenses();
 			}

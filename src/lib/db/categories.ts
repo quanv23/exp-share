@@ -10,6 +10,7 @@ import {
 	StringExpense,
 } from './expenses';
 import connectDB from './helper/mongoose';
+import insertDummyData from './helper/script';
 import { Category, DatabaseCategory } from './models/Category';
 import mongoose from 'mongoose';
 
@@ -154,14 +155,22 @@ export async function getCategoriesWithExpenses(
 	// Dynamically creates expenses filter depending if a date range is given
 	const expenseFilter: any[] = [{ $eq: ['$category', '$$categoryId'] }];
 	if (from && to && from !== 'undefined' && to !== 'undefined') {
-		expenseFilter.push({ $gte: ['$createdAt', new Date(from!)] });
-		expenseFilter.push({ $lte: ['$createdAt', new Date(to!)] });
+		// Creates the from and to dates
+		const fromDate: Date = new Date(from!);
+		fromDate.setHours(0, 0, 0, 0); // Sets time to min and max
+
+		const toDate: Date = new Date(to!);
+		toDate.setHours(23, 59, 59, 999);
+
+		expenseFilter.push({ $gte: ['$createdAt', fromDate] });
+		expenseFilter.push({ $lte: ['$createdAt', toDate] });
 	}
 
 	// Dynamically builds category filters if id is given
 	const categoryFilter: any = {
 		total: isExpense === 'true' ? { $lte: 0 } : { $gte: 0 },
 	};
+
 	if (categoryId) {
 		categoryFilter._id = new mongoose.Types.ObjectId(categoryId);
 	}
