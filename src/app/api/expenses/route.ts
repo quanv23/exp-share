@@ -8,6 +8,7 @@ import {
 	editExpense,
 	getAllExpenses,
 	getExpensesGroupedByDate,
+	getExpenseTotals,
 } from '@/lib/db/expenses';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -26,7 +27,13 @@ export async function GET(req: NextRequest): Promise<Response> {
 		} else {
 			// Otherwise pull out the parameters and filter the expenses
 			const isExpense: string | null = searchParams.get('isExpense');
-			res = await getExpensesGroupedByDate(isExpense);
+
+			// Depending on whether is expense is needed it gets the totals, the grouped expenses
+			if (isExpense === 'null') {
+				res = await getExpenseTotals();
+			} else {
+				res = await getExpensesGroupedByDate(isExpense);
+			}
 		}
 
 		return NextResponse.json(res, { status: 200 });

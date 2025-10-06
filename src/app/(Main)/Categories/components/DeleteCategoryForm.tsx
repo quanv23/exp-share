@@ -15,6 +15,14 @@ export interface Props {
 	 * ID of the expense to be deleted
 	 */
 	id: string;
+	/**
+	 * Callback function to open the success diagloog after deletion
+	 */
+	handleSuccessClick: () => void;
+	/**
+	 * Callback function to open failure diaglog after deletion failure
+	 */
+	handleFailureClick: () => void;
 }
 
 export default function DeleteCategoryForm(props: Props) {
@@ -60,7 +68,6 @@ export default function DeleteCategoryForm(props: Props) {
 			}
 		} catch (error) {
 			console.error(error);
-			throw new Error('Error deleting category');
 		}
 	}
 

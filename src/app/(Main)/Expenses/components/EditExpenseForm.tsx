@@ -32,13 +32,27 @@ export interface Props {
 	 */
 	handleModalClick: () => void;
 	/**
+	 * Callback function to open the success after edit is made
+	 */
+	handleSuccessClick: () => void;
+	/**
+	 * Callback function to open failure diaglog after edit is failed
+	 */
+	handleFailureClick: () => void;
+	/**
 	 * Flag the determines if fetched expenses are filtered or not
 	 */
 	filterExpenses: boolean;
 }
 
 export default function EditExpenseForm(props: Props) {
-	const { expense, handleModalClick, filterExpenses } = props;
+	const {
+		expense,
+		handleModalClick,
+		handleSuccessClick,
+		handleFailureClick,
+		filterExpenses,
+	} = props;
 
 	// Gets global store for refetching expenses
 	const fetchExpenses = useExpenseStore((state) => state.fetchExpenses);
@@ -151,9 +165,13 @@ export default function EditExpenseForm(props: Props) {
 
 			// Closes modal
 			handleModalClick();
+
+			// Opens success diaglog
+			handleSuccessClick();
 		} catch (error) {
 			console.error('Error message: ', error);
-			throw new Error('Error editing expense');
+			handleModalClick();
+			handleFailureClick();
 		}
 	}
 

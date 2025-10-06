@@ -9,8 +9,6 @@ import {
 	UserInputCategory,
 } from '@/lib/db/categories';
 import { useState } from 'react';
-import { useExpenseStore } from '@/lib/store/useExpenseStore';
-import { useExpenseFilterStore } from '@/lib/store/useExpenseFilterStore';
 import ColourSelector from './ColourSelector';
 
 export interface Props {
@@ -26,10 +24,24 @@ export interface Props {
 	 * Updates the display state
 	 */
 	updateLocalState: (name: string, colour: string) => void;
+	/**
+	 * Callback function to open the success after edit is made
+	 */
+	handleSuccessClick: () => void;
+	/**
+	 * Callback function to open failure diaglog after edit is failed
+	 */
+	handleFailureClick: () => void;
 }
 
 export default function EditCategoryForm(props: Props) {
-	const { categoryData, handleModalClick, updateLocalState } = props;
+	const {
+		categoryData,
+		handleModalClick,
+		updateLocalState,
+		handleSuccessClick,
+		handleFailureClick,
+	} = props;
 
 	// States that manages the category data for updating
 	const [category, setCategory] = useState<UserInputCategory>({
@@ -91,9 +103,13 @@ export default function EditCategoryForm(props: Props) {
 
 			// closes the modal
 			handleModalClick();
+
+			// Opens success dialog
+			handleSuccessClick();
 		} catch (error) {
 			console.error(error);
-			throw new Error('Error editing category');
+			handleModalClick();
+			handleFailureClick();
 		}
 	}
 

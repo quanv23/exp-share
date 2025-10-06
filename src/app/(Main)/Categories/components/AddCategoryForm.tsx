@@ -10,7 +10,24 @@ import { useExpenseFilterStore } from '@/lib/store/useExpenseFilterStore';
 import { useState } from 'react';
 import { useExpenseStore } from '@/lib/store/useExpenseStore';
 
-export default function AddCategoryForm() {
+interface Props {
+	/**
+	 * Callback function to open the success after add is made
+	 */
+	handleSuccessClick: () => void;
+	/**
+	 * Callback function to open failure diaglog after add is failed
+	 */
+	handleFailureClick: () => void;
+	/**
+	 * Callback function to close diaglog after adding
+	 */
+	handleModalClick: () => void;
+}
+
+export default function AddCategoryForm(props: Props) {
+	const { handleFailureClick, handleSuccessClick, handleModalClick } = props;
+
 	// Uses the grouped expense and filter store to refetch categories after adding a new one
 	const fetchGroupedExpenses = useExpenseStore(
 		(state) => state.fetchGroupedExpenses
@@ -73,9 +90,16 @@ export default function AddCategoryForm() {
 
 			// Refetches the categories
 			fetchGroupedExpenses(isExpense, dateRange?.from, dateRange?.to);
+
+			// Closes modal
+			handleModalClick();
+
+			// Displays success modal
+			handleSuccessClick();
 		} catch (error) {
 			console.error('Error message: ', error);
-			throw new Error('Error creating new category');
+			handleModalClick();
+			handleFailureClick();
 		}
 	}
 

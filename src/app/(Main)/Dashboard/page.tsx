@@ -10,6 +10,7 @@ import { useState, useEffect, use } from 'react';
 import { BarChart } from '@/tremorComponents/BarChart';
 import { LineChart } from '@/tremorComponents/LineChart';
 import { ExpenseGroupedByDate, StringExpense } from '@/lib/db/expenses';
+import { stringFloatToFloat } from '@/lib/globalFunctions';
 
 interface ChartData {
 	date: string;
@@ -17,7 +18,9 @@ interface ChartData {
 }
 
 interface Totals {
-	netTotal: number;
+	weeklyNetTotal: number;
+	monthlyNetTotal: number;
+	yearlyNetTotal: number;
 	weeklyTotal: number;
 	monthlyTotal: number;
 	yearlyTotal: number;
@@ -28,7 +31,9 @@ export default function page() {
 	const [isExpense, setIsExpense] = useState<boolean>(true);
 	const [isBarGraph, setIsBarGraph] = useState<boolean>(true);
 	const [totals, setTotals] = useState<Totals>({
-		netTotal: 0,
+		weeklyNetTotal: 0,
+		monthlyNetTotal: 0,
+		yearlyNetTotal: 0,
 		weeklyTotal: 0,
 		monthlyTotal: 0,
 		yearlyTotal: 0,
@@ -42,20 +47,17 @@ export default function page() {
 		async function getNetTotal() {
 			try {
 				// Fetches all the expenses from the db
-				const res = await fetch('api/expenses/');
+				const res = await fetch('api/expenses/?isExpense=null');
 
 				if (!res.ok) throw new Error();
 
-				const data: StringExpense[] = await res.json();
+				const data: ExpenseGroupedByDate[][] = await res.json();
 
-				// Calculates the net total by summing all the values
-				const netTotal = data.reduce(
-					(acc, expense) => acc + parseFloat(expense.amount),
-					0
-				);
 				setTotals((prev) => ({
 					...prev,
-					netTotal: netTotal,
+					weeklyNetTotal: data[0].length > 0 ? data[0][0].totalAmount : 0,
+					monthlyNetTotal: data[1].length > 0 ? data[1][0].totalAmount : 0,
+					yearlyNetTotal: data[2].length > 0 ? data[2][0].totalAmount : 0,
 				}));
 			} catch (error) {
 				console.error(error);
@@ -111,13 +113,51 @@ export default function page() {
 				// Depending on the selected date range further groups and parses the data into a type usable by the graphs
 				if (selectedDateRange === 'week') {
 					// Groups the dates in a week into mon, tue, wed, ... for displaying in the graph
-					const chartData: ChartData[] = data[0].map((group) => ({
-						date: new Date(group._id).toLocaleDateString('en-US', {
+					const chartData: ChartData[] = [
+						{
+							date: 'Sun',
+							total: 0,
+						},
+						{
+							date: 'Mon',
+							total: 0,
+						},
+						{
+							date: 'Tue',
+							total: 0,
+						},
+						{
+							date: 'Wed',
+							total: 0,
+						},
+						{
+							date: 'Thu',
+							total: 0,
+						},
+						{
+							date: 'Fri',
+							total: 0,
+						},
+						{
+							date: 'Sat',
+							total: 0,
+						},
+					];
+
+					// Fills in the total for the chart data
+					data[0].forEach((group) => {
+						const date = new Date(group._id).toLocaleDateString('en-US', {
 							weekday: 'short',
 							timeZone: 'UTC',
-						}),
-						total: group.totalAmount,
-					}));
+						});
+						const item: ChartData | undefined = chartData.find(
+							(obj) => obj.date === date
+						);
+
+						// Chart data contains all possible fields so it will always be found
+						item!.total = group.totalAmount;
+					});
+
 					setChartData(chartData);
 				} else if (selectedDateRange === 'month') {
 					// Groups the dates in a month into weeks for displaying in the graph
@@ -157,16 +197,40 @@ export default function page() {
 						// Adds the date to a week category
 						weeks[weekNumber].push(group);
 					});
+					const chartData: ChartData[] = [
+						{
+							date: 'Week 1',
+							total: 0,
+						},
+						{
+							date: 'Week 2',
+							total: 0,
+						},
+						{
+							date: 'Week 3',
+							total: 0,
+						},
+						{
+							date: 'Week 4',
+							total: 0,
+						},
+						{
+							date: 'Week 5',
+							total: 0,
+						},
+					];
 
-					// Using the week categories parses the data into a usuable type for the graph to display
+					// Using the week categories parses updates the chart data info
 					const weekGroups: [string, ExpenseGroupedByDate[]][] =
 						Object.entries(weeks);
-					const chartData: ChartData[] = weekGroups.map(
-						([weekNumber, expenses]) => ({
-							date: `Week ${weekNumber}`,
-							total: calculateTotal(expenses),
-						})
-					);
+
+					// Matches by week name and fills in the total data
+					weekGroups.forEach(([weekNumber, expeneses]) => {
+						const item: ChartData | undefined = chartData.find(
+							(obj) => obj.date === `Week ${weekNumber}`
+						);
+						item!.total = calculateTotal(expeneses);
+					});
 
 					setChartData(chartData);
 				} else {
@@ -183,12 +247,65 @@ export default function page() {
 						months[key] = months[key] + totalAmount;
 					});
 
-					// Parses the grouped months into a usable type for the graph
+					const chartData: ChartData[] = [
+						{
+							date: 'Jan',
+							total: 0,
+						},
+						{
+							date: 'Feb',
+							total: 0,
+						},
+						{
+							date: 'Mar',
+							total: 0,
+						},
+						{
+							date: 'Apr',
+							total: 0,
+						},
+						{
+							date: 'May',
+							total: 0,
+						},
+						{
+							date: 'Jun',
+							total: 0,
+						},
+						{
+							date: 'Jul',
+							total: 0,
+						},
+						{
+							date: 'Aug',
+							total: 0,
+						},
+						{
+							date: 'Sep',
+							total: 0,
+						},
+						{
+							date: 'Oct',
+							total: 0,
+						},
+						{
+							date: 'Nov',
+							total: 0,
+						},
+						{
+							date: 'Dec',
+							total: 0,
+						},
+					];
+
+					// updates the chart data info with the grouped info
 					const monthGroups: [string, number][] = Object.entries(months);
-					const chartData: ChartData[] = monthGroups.map(([month, total]) => ({
-						date: month,
-						total: total,
-					}));
+					monthGroups.forEach(([month, total]) => {
+						const item: ChartData | undefined = chartData.find(
+							(obj) => obj.date === month
+						);
+						item!.total = total;
+					});
 
 					setChartData(chartData);
 				}
@@ -250,9 +367,21 @@ export default function page() {
 				</button>
 			</div>
 			<div className="centered-flex flex-col">
-				<p className="text-myDarkGray my-2">Net Total:</p>
+				<p className="text-myDarkGray my-2">
+					{selectedDateRange === 'week'
+						? 'Weekly'
+						: selectedDateRange === 'month'
+						? 'Montly'
+						: 'Yearly'}{' '}
+					Net Total:
+				</p>
 				<strong className="text-2xl mt-4 mb-8">
-					${totals.netTotal.toFixed(2)}
+					$
+					{selectedDateRange === 'week'
+						? totals.weeklyNetTotal.toFixed(2)
+						: selectedDateRange === 'month'
+						? totals.monthlyNetTotal.toFixed(2)
+						: totals.yearlyNetTotal.toFixed(2)}
 				</strong>
 			</div>
 			<div
@@ -268,6 +397,7 @@ export default function page() {
 						data={chartData}
 						index="date"
 						categories={['total']}
+						showLegend={false}
 					/>
 				) : (
 					<LineChart
@@ -275,6 +405,7 @@ export default function page() {
 						data={chartData}
 						index="date"
 						categories={['total']}
+						showLegend={false}
 					/>
 				)}
 			</div>
@@ -289,7 +420,17 @@ export default function page() {
 					onClick={handleDateRangeChange}
 				>
 					<p className="text-xs">Week</p>
-					<strong className="text-sm">${totals.weeklyTotal.toFixed(2)}</strong>
+					<strong
+						className={`text-sm ${
+							selectedDateRange === 'week'
+								? ''
+								: isExpense
+								? 'text-myRed'
+								: 'text-myGreen'
+						}`}
+					>
+						${Math.abs(totals.weeklyTotal).toFixed(2)}
+					</strong>
 				</button>
 				<button
 					className={`block centered-flex flex-col w-full p-4 gap-2 ${
@@ -301,7 +442,17 @@ export default function page() {
 					onClick={handleDateRangeChange}
 				>
 					<p className="text-xs">Month</p>
-					<strong className="text-sm">${totals.monthlyTotal.toFixed(2)}</strong>
+					<strong
+						className={`text-sm ${
+							selectedDateRange === 'month'
+								? ''
+								: isExpense
+								? 'text-myRed'
+								: 'text-myGreen'
+						}`}
+					>
+						${Math.abs(totals.monthlyTotal).toFixed(2)}
+					</strong>
 				</button>
 				<button
 					className={`block centered-flex flex-col w-full p-4 gap-2 ${
@@ -313,7 +464,17 @@ export default function page() {
 					onClick={handleDateRangeChange}
 				>
 					<p className="text-xs">Year</p>
-					<strong className="text-sm">${totals.yearlyTotal.toFixed(2)}</strong>
+					<strong
+						className={`text-sm ${
+							selectedDateRange === 'year'
+								? ''
+								: isExpense
+								? 'text-myRed'
+								: 'text-myGreen'
+						}`}
+					>
+						${Math.abs(totals.yearlyTotal).toFixed(2)}
+					</strong>
 				</button>
 			</div>
 		</div>

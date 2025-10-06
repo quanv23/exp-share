@@ -21,13 +21,27 @@ export interface Props {
 	 */
 	handleModalClick: () => void;
 	/**
+	 * Callback function to open the success after deletion
+	 */
+	handleSuccessClick: () => void;
+	/**
+	 * Callback function to open failure diaglog after delete fails
+	 */
+	handleFailureClick: () => void;
+	/**
 	 * Flag that determines if fetched expenses are filtered or not
 	 */
 	filterExpenses: boolean;
 }
 
 export default function DeleteExpenseForm(props: Props) {
-	const { id, handleModalClick, filterExpenses } = props;
+	const {
+		id,
+		handleModalClick,
+		handleSuccessClick,
+		handleFailureClick,
+		filterExpenses,
+	} = props;
 
 	// Gets global store for refetching expenses
 	const fetchExpenses = useExpenseStore((state) => state.fetchExpenses);
@@ -86,9 +100,13 @@ export default function DeleteExpenseForm(props: Props) {
 
 			// Closes modal
 			handleModalClick();
+
+			// Opens success dialog
+			handleSuccessClick();
 		} catch (error) {
 			console.error('Error message: ', error);
-			throw new Error('Error deleting expense');
+			handleModalClick();
+			handleFailureClick();
 		}
 	}
 

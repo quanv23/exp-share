@@ -128,7 +128,14 @@ export async function getAllExpenses(): Promise<StringExpense[]> {
 	}
 }
 
-async function helperQuery(
+/**
+ * Fetches expenses that fall between a date range, are positive/negative and then groups them by date
+ * @param isExpense Determines whether to get positive or negative expenses
+ * @param from The min of the date range
+ * @param to The max of the date range
+ * @returns Expenses grouped by date with the summed total
+ */
+async function helperQuery1(
 	isExpense: string,
 	from: Date,
 	to: Date
@@ -153,7 +160,6 @@ async function helperQuery(
 						},
 					},
 					totalAmount: { $sum: '$amount' },
-					expenses: { $push: '$$ROOT' },
 				},
 			},
 			{
@@ -193,7 +199,7 @@ export async function getExpensesGroupedByDate(
 	firstDayOfWeek.setHours(0, 0, 0, 0);
 	lastDayOfWeek.setHours(23, 59, 59, 999);
 
-	const week: ExpenseGroupedByDate[] = await helperQuery(
+	const week: ExpenseGroupedByDate[] = await helperQuery1(
 		isExpense!,
 		firstDayOfWeek,
 		lastDayOfWeek
@@ -206,7 +212,7 @@ export async function getExpensesGroupedByDate(
 	// Must set time of last day to the maximum
 	lastDayOfMonth.setHours(23, 59, 59, 999);
 
-	const month: ExpenseGroupedByDate[] = await helperQuery(
+	const month: ExpenseGroupedByDate[] = await helperQuery1(
 		isExpense!,
 		firstDayOfMonth,
 		lastDayOfMonth
@@ -219,7 +225,7 @@ export async function getExpensesGroupedByDate(
 	// Must set time of last day to the maximum
 	lastDayOfYear.setHours(23, 59, 59, 999);
 
-	const year: ExpenseGroupedByDate[] = await helperQuery(
+	const year: ExpenseGroupedByDate[] = await helperQuery1(
 		isExpense!,
 		firstDayOfYear,
 		lastDayOfYear
@@ -229,6 +235,85 @@ export async function getExpensesGroupedByDate(
 	// const year: ExpenseGroupedByDate[] = [];
 	return [week, month, year];
 }
+/**
+ * Fetcehs the total of all expenses in a specified date range
+ * @param from The min of the date range
+ * @param to The max of the date range
+ * @returns The total amount of the expenses
+ */
+async function helperQuery2(
+	from: Date,
+	to: Date
+): Promise<ExpenseGroupedByDate[]> {
+	try {
+		// Fetches the expenses that match the filter
+		const expenses: ExpenseGroupedByDate[] = await Expense.aggregate([
+			{
+				$match: {
+					createdAt: { $gte: from, $lte: to },
+				},
+			},
+			{
+				// Truncate to the start of the day so all times on the same date group together
+				$group: {
+					_id: '',
+					totalAmount: { $sum: '$amount' },
+				},
+			},
+		]);
+
+		return expenses.map((expense: ExpenseGroupedByDate) => ({
+			_id: expense._id,
+			totalAmount: parseFloat(expense.totalAmount.toString()),
+		}));
+	} catch (error) {
+		console.error(error);
+		throw new Error('Get filtered expense operation failed');
+	}
+}
+
+/**
+ * Gets net total of expenses in a week, month, and year date range
+ */
+export async function getExpenseTotals(): Promise<ExpenseGroupedByDate[][]> {
+	const today = new Date();
+
+	// Gets the first and last day of today's week
+	const firstDayOfWeek = new Date(today);
+	firstDayOfWeek.setDate(today.getDate() - today.getDay());
+
+	const lastDayOfWeek = new Date(today);
+	lastDayOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+
+	// Manually sets the time to catch all dates
+	firstDayOfWeek.setHours(0, 0, 0, 0);
+	lastDayOfWeek.setHours(23, 59, 59, 999);
+
+	const week = await helperQuery2(firstDayOfWeek, lastDayOfWeek);
+
+	// Gets the first and last day of today's month
+	const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+	const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+	// Must set time of last day to the maximum
+	lastDayOfMonth.setHours(23, 59, 59, 999);
+
+	const month = await helperQuery2(firstDayOfMonth, lastDayOfMonth);
+
+	// Gets the first and last day of today's year
+	const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+	const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
+
+	// Must set time of last day to the maximum
+	lastDayOfYear.setHours(23, 59, 59, 999);
+
+	const year = await helperQuery2(firstDayOfYear, lastDayOfYear);
+
+	// const month: ExpenseGroupedByDate[] = [];
+	// const year: ExpenseGroupedByDate[] = [];
+	return [week, month, year];
+}
+
 /**
  * Adds an expense into the db
  * @param expense A user inputted expense to be added to the db

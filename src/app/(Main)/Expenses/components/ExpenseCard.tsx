@@ -9,6 +9,8 @@ import { StringExpense } from '@/lib/db/expenses';
 import { useState, useEffect } from 'react';
 import EditExpenseForm from './EditExpenseForm';
 import DeleteExpenseForm from './DeleteExpenseForm';
+import SuccessDialog from '@/app/components/SuccessDialog';
+import FailureDialog from '@/app/components/FailureDialog';
 
 /**
  * Represents the props of the card
@@ -22,13 +24,22 @@ export interface Props {
 	 * Flag that determines whether the fetched expenses are filtered or not
 	 */
 	filterExpenses: boolean;
+	handleSuccessClick: () => void;
+	handleFailureClick: () => void;
 }
 
 export default function ExpenseCard(props: Props) {
-	const { expense, filterExpenses } = props;
+	const { expense, filterExpenses, handleSuccessClick, handleFailureClick } =
+		props;
 
 	// State that determines whether to display the modals or not
-	const [toggleModal, setToggleModal] = useState<Boolean>(false);
+	const [toggleModal, setToggleModal] = useState<boolean>(false);
+
+	// State that determines whether to display the success dialog or not
+	const [toggleSuccess, setToggleSuccess] = useState<boolean>(false);
+
+	// State that determines whether to display the failure dialog or not
+	const [toggleFailure, setToggleFailure] = useState<boolean>(false);
 
 	// Side effect that disables the scroll whenever a modal is open
 	useEffect(() => {
@@ -45,6 +56,7 @@ export default function ExpenseCard(props: Props) {
 	function handleModalClick(): void {
 		setToggleModal((prev) => !prev);
 	}
+
 	// Styles the amount text to either red or green if it's negative
 	const amountStyles: string =
 		parseFloat(expense.amount) >= 0 ? 'text-myGreen' : 'text-myRed';
@@ -57,11 +69,15 @@ export default function ExpenseCard(props: Props) {
 						<EditExpenseForm
 							expense={expense}
 							handleModalClick={handleModalClick}
+							handleSuccessClick={handleSuccessClick}
+							handleFailureClick={handleFailureClick}
 							filterExpenses={filterExpenses}
 						/>
 						<DeleteExpenseForm
 							id={expense.id}
 							handleModalClick={handleModalClick}
+							handleSuccessClick={handleSuccessClick}
+							handleFailureClick={handleFailureClick}
 							filterExpenses={filterExpenses}
 						/>
 					</div>

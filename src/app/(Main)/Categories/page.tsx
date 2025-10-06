@@ -18,6 +18,8 @@ import Link from 'next/link';
 import Modal from '@/app/components/Modal';
 import AddCategoryForm from './components/AddCategoryForm';
 import { useExpenseStore } from '@/lib/store/useExpenseStore';
+import SuccessDialog from '@/app/components/SuccessDialog';
+import FailureDialog from '@/app/components/FailureDialog';
 
 export default function page() {
 	// The search parameter global store for filtering the grouped expenses store
@@ -32,6 +34,10 @@ export default function page() {
 
 	// State that determines whether to display the modal of not
 	const [toggleModal, setToggleModal] = useState<boolean>(false);
+
+	// State that determines whether to display sucess/failure dialog
+	const [toggleSuccess, setToggleSuccess] = useState<boolean>(false);
+	const [toggleFailure, setToggleFailure] = useState<boolean>(false);
 
 	// Fetches and refilters the data from the db on mount, and anytime a filter is changed
 	useEffect(() => {
@@ -102,13 +108,41 @@ export default function page() {
 		setToggleModal((prev) => !prev);
 	}
 
+	/**
+	 * Handles when a success diaglog needs to be open/closed
+	 */
+	function handleSuccessClick(): void {
+		setToggleSuccess((prev) => !prev);
+	}
+
+	/**
+	 * Handles when a failure diaglog needs to be open/closed
+	 */
+	function handleFailureClick(): void {
+		setToggleFailure((prev) => !prev);
+	}
+
 	return (
 		<>
 			{toggleModal && (
 				<Modal isOpen={toggleModal} onClose={handleModalClick}>
 					<div className="centered-flex">
-						<AddCategoryForm />
+						<AddCategoryForm
+							handleFailureClick={handleFailureClick}
+							handleSuccessClick={handleSuccessClick}
+							handleModalClick={handleModalClick}
+						/>
 					</div>
+				</Modal>
+			)}
+			{toggleSuccess && (
+				<Modal isOpen={toggleSuccess} onClose={handleSuccessClick}>
+					<SuccessDialog />
+				</Modal>
+			)}
+			{toggleFailure && (
+				<Modal isOpen={toggleFailure} onClose={handleFailureClick}>
+					<FailureDialog />
 				</Modal>
 			)}
 			<div className="flex flex-col justify-center pt-5 pl-5 pr-5 pb-21 gap-4">

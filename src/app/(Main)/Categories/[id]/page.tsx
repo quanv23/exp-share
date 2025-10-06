@@ -19,10 +19,16 @@ import Link from 'next/link';
 import Modal from '@/app/components/Modal';
 import EditCategoryForm from '../components/EditCategoryForm';
 import DeleteCategoryForm from '../components/DeleteCategoryForm';
+import SuccessDialog from '@/app/components/SuccessDialog';
+import FailureDialog from '@/app/components/FailureDialog';
 
 export default function page() {
 	// Gets the route parameter (asserts id is string to get around typing error)
 	const { id } = useParams<{ id: string }>();
+
+	// State that determines whether to display sucess/failure dialog
+	const [toggleSuccess, setToggleSuccess] = useState<boolean>(false);
+	const [toggleFailure, setToggleFailure] = useState<boolean>(false);
 
 	// Gets the global stores
 	const dateRange = useExpenseFilterStore((state) => state.dateRange);
@@ -45,6 +51,9 @@ export default function page() {
 
 	// State that determines whether to display the modal or not
 	const [toggleModal, setToggleModal] = useState(false);
+
+	// State that manages how many expenses can be displayed on the page at a time
+	const [pageLimit, setPageLimit] = useState(10);
 
 	// Side effect that disables the scroll whenever a modal is open
 	useEffect(() => {
@@ -79,6 +88,11 @@ export default function page() {
 		setToggleModal((prev) => !prev);
 	}
 
+	// Handles whenever the load more btn is clicked and increases the limit of expenses to display
+	function handleLoadMore() {
+		setPageLimit((prev) => prev + 10);
+	}
+
 	/**
 	 * Updates the display state with the new values
 	 */
@@ -90,10 +104,30 @@ export default function page() {
 		}));
 	}
 
+	/**
+	 * Handles when a success diaglog needs to be open/closed
+	 */
+	function handleSuccessClick(): void {
+		setToggleSuccess((prev) => !prev);
+	}
+
+	/**
+	 * Handles when a failure diaglog needs to be open/closed
+	 */
+	function handleFailureClick(): void {
+		setToggleFailure((prev) => !prev);
+	}
+
 	// Creates the expense cards
 	const expenseCards: React.ReactNode[] = expenses.map(
 		(expense: StringExpense) => (
-			<ExpenseCard key={expense.id} expense={expense} filterExpenses={true} />
+			<ExpenseCard
+				key={expense.id}
+				expense={expense}
+				filterExpenses={true}
+				handleFailureClick={handleFailureClick}
+				handleSuccessClick={handleSuccessClick}
+			/>
 		)
 	);
 
@@ -106,9 +140,25 @@ export default function page() {
 							categoryData={category}
 							handleModalClick={handleModalClick}
 							updateLocalState={updateLocalState}
+							handleFailureClick={handleFailureClick}
+							handleSuccessClick={handleSuccessClick}
 						/>
-						<DeleteCategoryForm id={category.id} />
+						<DeleteCategoryForm
+							id={category.id}
+							handleFailureClick={handleFailureClick}
+							handleSuccessClick={handleSuccessClick}
+						/>
 					</div>
+				</Modal>
+			)}
+			{toggleSuccess && (
+				<Modal isOpen={toggleSuccess} onClose={handleSuccessClick}>
+					<SuccessDialog />
+				</Modal>
+			)}
+			{toggleFailure && (
+				<Modal isOpen={toggleFailure} onClose={handleFailureClick}>
+					<FailureDialog />
 				</Modal>
 			)}
 			<div className="flex flex-col justify-center pt-5 pl-5 pr-5 pb-21 gap-4">
@@ -148,7 +198,16 @@ export default function page() {
 				) : (
 					<>
 						<div className="flex flex-col gap-2">{expenseCards}</div>
-						<button className="big-btn bg-myGreen">Load More</button>
+						{pageLimit < expenses.length && (
+							<button className="big-btn bg-myGreen" onClick={handleLoadMore}>
+								Load More
+							</button>
+						)}
+						<div className="centered-flex text-xs">
+							Displaying 1-
+							{pageLimit < expenses.length ? pageLimit : expenses.length} out of{' '}
+							{expenses.length}
+						</div>
 					</>
 				)}
 			</div>
