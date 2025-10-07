@@ -4,6 +4,7 @@
  */
 
 import {
+	addExpense,
 	deleteExpense,
 	editExpense,
 	getAllExpenses,
@@ -40,6 +41,20 @@ export async function GET(req: NextRequest): Promise<Response> {
 	} catch (error) {
 		console.error(error);
 		return NextResponse.json({}, { status: 400 });
+	}
+}
+
+/**
+ * Adds an expense
+ */
+export async function POST(req: NextRequest): Promise<Response> {
+	try {
+		const { newExpense } = await req.json();
+		await addExpense(newExpense);
+		return NextResponse.json(true, { status: 200 });
+	} catch (error) {
+		console.error(error);
+		return NextResponse.json(false, { status: 400 });
 	}
 }
 

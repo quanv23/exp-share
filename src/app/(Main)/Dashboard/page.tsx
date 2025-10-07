@@ -97,6 +97,7 @@ export default function Page() {
 				if (!res.ok) throw new Error();
 
 				const data: ExpenseGroupedByDate[][] = await res.json();
+				console.log(data);
 
 				setTotals((prev) => ({
 					...prev,
@@ -143,7 +144,6 @@ export default function Page() {
 					data[0].forEach((group) => {
 						const date = new Date(group._id).toLocaleDateString('en-US', {
 							weekday: 'short',
-							timeZone: 'UTC',
 						});
 						const item: ChartData | undefined = chartData.find(
 							(obj) => obj.date === date

@@ -5,24 +5,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StringCategory } from '@/lib/db/categories';
 import { UserInputExpense } from '@/lib/db/expenses';
 import SelectCategory from './SelectCategory';
-
-/**
- * Represents the props for this component
- */
-export interface Props {
-	/**
-	 * List of all categories from the db with string values
-	 */
-	categories: StringCategory[];
-	/**
-	 * Function that runs when the form is submitted to add an expense to the db
-	 */
-	addExpenseFunction: (expense: UserInputExpense) => Promise<void>;
-}
 
 /**
  * Represents the type for an event change in the form
@@ -31,8 +17,19 @@ type EventChange =
 	| React.ChangeEvent<HTMLInputElement>
 	| React.ChangeEvent<HTMLSelectElement>;
 
+interface Props {
+	/**
+	 * Callback function to open the success after edit is made
+	 */
+	handleSuccessClick: () => void;
+	/**
+	 * Callback function to open failure diaglog after edit is failed
+	 */
+	handleFailureClick: () => void;
+}
+
 export default function AddExpenseForm(props: Props) {
-	const { categories, addExpenseFunction } = props;
+	const { handleFailureClick, handleSuccessClick } = props;
 
 	// State that handles the expense information for inserting into the db
 	const [expense, setExpense] = useState<UserInputExpense>({
@@ -40,6 +37,23 @@ export default function AddExpenseForm(props: Props) {
 		amount: '',
 		category: '',
 	});
+
+	// State that contains the categories
+	const [categories, setCategories] = useState<StringCategory[]>([]);
+
+	// Fetches categories from the db for the dropdown when page is first rendered
+	useEffect(() => {
+		async function fetchCategories(): Promise<void> {
+			const categories = await fetch('/api/categories');
+
+			if (!categories.ok) throw new Error();
+
+			const data: StringCategory[] = await categories.json();
+			setCategories(data);
+		}
+
+		fetchCategories();
+	}, []);
 
 	/**
 	 * Handles when an input field in the form is changed and updates the expense state.
@@ -65,7 +79,22 @@ export default function AddExpenseForm(props: Props) {
 	): Promise<void> {
 		try {
 			event.preventDefault(); // Prevents refresh
-			await addExpenseFunction(expense);
+
+			// Attemps to add expense
+			const res = await fetch('/api/expenses', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					newExpense: expense,
+				}),
+			});
+
+			if (!res.ok) throw new Error();
+
+			// Opens success modal
+			handleSuccessClick();
 
 			// Clears expense fields
 			setExpense({
@@ -75,7 +104,7 @@ export default function AddExpenseForm(props: Props) {
 			});
 		} catch (error) {
 			console.error('Error message: ', error);
-			throw new Error('Error adding new expense');
+			handleFailureClick();
 		}
 	}
 

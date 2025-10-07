@@ -159,6 +159,7 @@ async function helperQuery1(
 						},
 					},
 					totalAmount: { $sum: '$amount' },
+					expenses: { $push: '$$ROOT' },
 				},
 			},
 			{
@@ -171,6 +172,8 @@ async function helperQuery1(
 		return expenses.map((expense: ExpenseGroupedByDate) => ({
 			_id: expense._id,
 			totalAmount: parseFloat(expense.totalAmount.toString()),
+			// @ts-ignore
+			expenses: expense.expenses,
 		}));
 	} catch (error) {
 		console.error(error);
