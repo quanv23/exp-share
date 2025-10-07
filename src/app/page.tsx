@@ -20,7 +20,7 @@ export default async function Page() {
 	return (
 		<div className="centered-flex block flex-col space-y-4 w-screen h-screen p-5">
 			<AddExpenseForm categories={categories} addExpenseFunction={addExpense} />
-			<div className="centered-flex block w-full h-16 p-6 bg-white gap-10">
+			<div className="centered-flex block h-16 p-6 bg-white gap-10">
 				<Link href={'/'}>
 					<RiAddCircleFill />
 				</Link>

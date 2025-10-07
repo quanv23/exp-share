@@ -210,5 +210,5 @@ export default async function insertDummyData(): Promise<void> {
 		},
 	];
 	await Expense.deleteMany({});
-	await Expense.insertMany(expenses);
+	// await Expense.insertMany(expenses);
 }

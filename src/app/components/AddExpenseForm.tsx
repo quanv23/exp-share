@@ -82,25 +82,25 @@ export default function AddExpenseForm(props: Props) {
 	return (
 		<form
 			onSubmit={handleFormSubmit}
-			className='centered-flex block flex-col w-full bg-white p-8 space-y-6'
+			className="centered-flex block flex-col bg-white p-8 space-y-6"
 		>
-			<h1 className='text-4xl font-bold'>Add Expense</h1>
+			<h1 className="text-4xl font-bold">Add Expense</h1>
 			<input
-				type='text'
-				name='description'
+				type="text"
+				name="description"
 				value={expense.description}
 				onChange={handleInputChange}
-				placeholder='Description'
-				className='input-field w-full'
+				placeholder="Description"
+				className="input-field w-full"
 			></input>
-			<div className='flex w-full gap-x-4'>
+			<div className="flex w-full gap-x-4">
 				<input
-					type='number'
-					name='amount'
+					type="number"
+					name="amount"
 					value={expense.amount}
 					onChange={handleInputChange}
-					placeholder='Amount'
-					className='input-field w-3/6'
+					placeholder="Amount"
+					className="input-field w-3/6"
 				></input>
 				<SelectCategory
 					categories={categories}
@@ -109,7 +109,7 @@ export default function AddExpenseForm(props: Props) {
 					onChangeFunction={handleInputChange}
 				/>
 			</div>
-			<button type='submit' className='big-btn bg-myGreen'>
+			<button type="submit" className="big-btn bg-myGreen">
 				Add
 			</button>
 		</form>

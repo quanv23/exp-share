@@ -8,7 +8,6 @@ import connectDB from './helper/mongoose';
 import { Expense } from './models/Expense';
 import { Category } from './models/Category'; // Must import for .populate to work
 import mongoose from 'mongoose';
-import insertDummyData from './helper/script';
 
 /**
  * Represents an expense from the database that is populated with the category fields
