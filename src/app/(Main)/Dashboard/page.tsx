@@ -393,6 +393,7 @@ export default function Page() {
 						index="date"
 						categories={['total']}
 						showLegend={false}
+						showTooltip={false}
 					/>
 				) : (
 					<LineChart
@@ -401,6 +402,7 @@ export default function Page() {
 						index="date"
 						categories={['total']}
 						showLegend={false}
+						showTooltip={false}
 					/>
 				)}
 			</div>
