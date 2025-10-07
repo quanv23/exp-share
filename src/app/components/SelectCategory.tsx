@@ -15,7 +15,7 @@ export interface Props {
 	/**
 	 * Width of <select> as a string in tailwind format (Ex. w-4)
 	 */
-	width: String;
+	width: string;
 	/**
 	 * Function that runs when changes to the input field occur
 	 */
@@ -46,12 +46,12 @@ export default function SelectCategory(props: Props) {
 
 	return (
 		<select
-			name='category'
+			name="category"
 			value={value}
 			onChange={onChangeFunction}
 			className={`input-field ${width}`}
 		>
-			<option value=''>Category</option>
+			<option value="">Category</option>
 			{categoryElements}
 		</select>
 	);

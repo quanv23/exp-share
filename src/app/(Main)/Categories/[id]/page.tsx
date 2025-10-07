@@ -22,7 +22,7 @@ import DeleteCategoryForm from '../components/DeleteCategoryForm';
 import SuccessDialog from '@/app/components/SuccessDialog';
 import FailureDialog from '@/app/components/FailureDialog';
 
-export default function page() {
+export default function Page() {
 	// Gets the route parameter (asserts id is string to get around typing error)
 	const { id } = useParams<{ id: string }>();
 
@@ -73,7 +73,7 @@ export default function page() {
 				dateRange?.to,
 				id
 			);
-			setCategory((prev) => category);
+			setCategory(category);
 		}
 
 		// Sets the categoryId for the expense card to use when refetching after editing/deleting

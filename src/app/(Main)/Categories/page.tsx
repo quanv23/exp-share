@@ -21,7 +21,7 @@ import { useExpenseStore } from '@/lib/store/useExpenseStore';
 import SuccessDialog from '@/app/components/SuccessDialog';
 import FailureDialog from '@/app/components/FailureDialog';
 
-export default function page() {
+export default function Page() {
 	// The search parameter global store for filtering the grouped expenses store
 	const isExpense = useExpenseFilterStore((state) => state.isExpense);
 	const setIsExpense = useExpenseFilterStore((state) => state.setIsExpense);
@@ -173,7 +173,7 @@ export default function page() {
 						// This error occurs because colors : "colour" | "another colour" | "another colour" and so on
 						// But because we're passing a string[], typescript is scared that this string can be any string literal not in the colors type
 						// But since the user is forced to only select colours within the AvailableChartColour we can ignore this error
-						// @ts-ignore
+						// @ts-expect-error
 						colors={groupedExpenses.map(
 							(category: StringCategoryWithExpenses) => category.colour
 						)}

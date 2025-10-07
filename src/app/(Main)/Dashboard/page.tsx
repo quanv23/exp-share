@@ -6,11 +6,10 @@
 'use client';
 
 import ExpenseIncomeButton from '@/app/components/ExpenseIncomeButton';
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart } from '@/tremorComponents/BarChart';
 import { LineChart } from '@/tremorComponents/LineChart';
-import { ExpenseGroupedByDate, StringExpense } from '@/lib/db/expenses';
-import { stringFloatToFloat } from '@/lib/globalFunctions';
+import { ExpenseGroupedByDate } from '@/lib/db/expenses';
 
 interface ChartData {
 	date: string;
@@ -26,7 +25,7 @@ interface Totals {
 	yearlyTotal: number;
 }
 
-export default function page() {
+export default function Page() {
 	// State that manages whether to display expense/income data
 	const [isExpense, setIsExpense] = useState<boolean>(true);
 	const [isBarGraph, setIsBarGraph] = useState<boolean>(true);
@@ -91,10 +90,6 @@ export default function page() {
 		 * Fetches expenses, calculates total and parses data
 		 */
 		async function getExpenses() {
-			const today = new Date();
-			let from: Date;
-			let to: Date;
-
 			try {
 				// Fetches the filtered expenses from the db
 				const res = await fetch(`/api/expenses/?isExpense=${isExpense}`);
@@ -176,8 +171,8 @@ export default function page() {
 
 					data[1].forEach((group) => {
 						// Gets the day of the month
-						const date = new Date(group._id);
-						const dayOfMonth = date.getDate();
+						const date: Date = new Date(group._id);
+						const dayOfMonth: number = date.getDate();
 
 						const firstDayOfMonth = new Date(
 							date.getFullYear(),
@@ -238,7 +233,7 @@ export default function page() {
 					const months: any = {};
 					data[2].forEach(({ _id, totalAmount }) => {
 						// Gets the key as the month
-						const key = new Date(_id).toLocaleDateString('en-US', {
+						const key: string = new Date(_id).toLocaleDateString('en-US', {
 							month: 'short',
 						});
 

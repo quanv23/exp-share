@@ -9,8 +9,6 @@ import { StringExpense } from '@/lib/db/expenses';
 import { useState, useEffect } from 'react';
 import EditExpenseForm from './EditExpenseForm';
 import DeleteExpenseForm from './DeleteExpenseForm';
-import SuccessDialog from '@/app/components/SuccessDialog';
-import FailureDialog from '@/app/components/FailureDialog';
 
 /**
  * Represents the props of the card
@@ -34,12 +32,6 @@ export default function ExpenseCard(props: Props) {
 
 	// State that determines whether to display the modals or not
 	const [toggleModal, setToggleModal] = useState<boolean>(false);
-
-	// State that determines whether to display the success dialog or not
-	const [toggleSuccess, setToggleSuccess] = useState<boolean>(false);
-
-	// State that determines whether to display the failure dialog or not
-	const [toggleFailure, setToggleFailure] = useState<boolean>(false);
 
 	// Side effect that disables the scroll whenever a modal is open
 	useEffect(() => {

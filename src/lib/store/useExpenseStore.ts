@@ -5,11 +5,7 @@
  */
 import { create } from 'zustand';
 import { StringExpense } from '../db/expenses';
-import {
-	getCategoryById,
-	StringCategory,
-	StringCategoryWithExpenses,
-} from '../db/categories';
+import { StringCategory, StringCategoryWithExpenses } from '../db/categories';
 import { stringFloatToFloat } from '../globalFunctions';
 
 interface ExpenseState {
@@ -49,7 +45,7 @@ interface ExpenseState {
 }
 
 // Creates expense store for displaying expenses that can be refreshed anywhere
-export const useExpenseStore = create<ExpenseState>((set, get) => ({
+export const useExpenseStore = create<ExpenseState>((set) => ({
 	expenses: [],
 	groupedExpenses: [],
 	totalAmount: 0,
@@ -61,7 +57,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 
 			// Parses and sets the store's data
 			const data: StringExpense[] = await expenses.json();
-			set((state) => ({ expenses: data }));
+			set({ expenses: data });
 		} catch (error) {
 			console.error(error);
 			throw new Error('Failed to fetch expenses in store');
@@ -88,7 +84,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 			);
 			// Sorts the categories in alphabetical order or else it just randomizes every reload
 			data.sort((a, b) => a.name.localeCompare(b.name));
-			set((state) => ({ groupedExpenses: data, totalAmount: total }));
+			set({ groupedExpenses: data, totalAmount: total });
 		} catch (error) {
 			console.error(error);
 			throw new Error('Failed to fetch grouped expenses in store');
@@ -134,7 +130,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 				0
 			);
 
-			set((state) => ({ expenses: data[0].expenses, totalAmount: total }));
+			set({ expenses: data[0].expenses, totalAmount: total });
 			return data[0];
 		} catch (error) {
 			console.error(error);

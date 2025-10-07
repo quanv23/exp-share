@@ -10,7 +10,6 @@ import {
 	StringExpense,
 } from './expenses';
 import connectDB from './helper/mongoose';
-import insertDummyData from './helper/script';
 import { Category, DatabaseCategory } from './models/Category';
 import mongoose from 'mongoose';
 

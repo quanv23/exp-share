@@ -14,7 +14,7 @@ import AddExpenseForm from './components/AddExpenseForm';
 import { getAllCategories, StringCategory } from '@/lib/db/categories';
 import { addExpense } from '@/lib/db/expenses';
 
-export default async function page() {
+export default async function Page() {
 	const categories: StringCategory[] = await getAllCategories();
 
 	return (

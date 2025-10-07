@@ -5,8 +5,6 @@
  */
 'use client';
 
-import { useState, useEffect } from 'react';
-
 /**
  * Represents the props for the modal
  */
@@ -14,7 +12,7 @@ export interface Props {
 	/**
 	 * Determines whether to display the modal or not
 	 */
-	isOpen: Boolean;
+	isOpen: boolean;
 	/**
 	 * Click event handler that closes the modal. Typically by negating the isOpen state
 	 */
@@ -33,7 +31,7 @@ export default function Modal(props: Props) {
 
 	return (
 		<div
-			className='centered-flex fixed inset-0 bg-myLightGray/50 backdrop-blur-sm z-50'
+			className="centered-flex fixed inset-0 bg-myLightGray/50 backdrop-blur-sm z-50"
 			onClick={onClose}
 		>
 			<div

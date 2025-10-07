@@ -14,7 +14,7 @@ import Modal from '@/app/components/Modal';
 import SuccessDialog from '@/app/components/SuccessDialog';
 import FailureDialog from '@/app/components/FailureDialog';
 
-export default function page() {
+export default function Page() {
 	const { expenses, fetchExpenses } = useExpenseStore();
 
 	// State that manages the amount of expenses to display at once

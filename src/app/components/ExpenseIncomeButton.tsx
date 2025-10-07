@@ -10,7 +10,7 @@ export interface Prop {
 	/**
 	 * State that determines whether to show expenses or income
 	 */
-	showExpense: Boolean;
+	showExpense: boolean;
 	/**
 	 * Callback function that updates the state to now show expenses
 	 */

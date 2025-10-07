@@ -49,9 +49,10 @@ export async function GET(req: NextRequest): Promise<Response> {
 export async function DELETE(req: NextRequest): Promise<Response> {
 	try {
 		const { id } = await req.json();
-		const res = await deleteExpense(id);
+		await deleteExpense(id);
 		return NextResponse.json(true, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return NextResponse.json(false, { status: 400 });
 	}
 }
@@ -62,9 +63,10 @@ export async function DELETE(req: NextRequest): Promise<Response> {
 export async function PATCH(req: NextRequest): Promise<Response> {
 	try {
 		const { newExpense } = await req.json();
-		const res = await editExpense(newExpense);
+		await editExpense(newExpense);
 		return NextResponse.json(true, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return NextResponse.json(false, { status: 400 });
 	}
 }

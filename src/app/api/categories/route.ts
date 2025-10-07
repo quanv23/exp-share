@@ -33,6 +33,7 @@ export async function GET(req: NextRequest): Promise<Response> {
 
 		return NextResponse.json(res, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return NextResponse.json({}, { status: 400 });
 	}
 }
@@ -46,6 +47,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 		await addCategory(newCategory);
 		return NextResponse.json(true, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return NextResponse.json(false, { status: 400 });
 	}
 }
@@ -59,6 +61,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
 		await editCategory(newCategory);
 		return NextResponse.json(true, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return NextResponse.json(false, { status: 400 });
 	}
 }
@@ -72,6 +75,7 @@ export async function DELETE(req: NextRequest) {
 		await deleteCategory(id);
 		return NextResponse.json(true, { status: 200 });
 	} catch (error) {
+		console.error(error);
 		return NextResponse.json(false, { status: 400 });
 	}
 }
