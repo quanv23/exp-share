@@ -97,7 +97,6 @@ export default function Page() {
 				if (!res.ok) throw new Error();
 
 				const data: ExpenseGroupedByDate[][] = await res.json();
-				console.log(data);
 
 				setTotals((prev) => ({
 					...prev,
